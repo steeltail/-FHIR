@@ -1,0 +1,2680 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一健FHIR · 運動損傷復健資訊互通平台</title>
+<style>
+:root{
+  --bg:#eef2f7; --surface:#ffffff; --surface-2:#f7fafc;
+  --line:#dde5ee; --line-strong:#c6d3e2;
+  --text:#16283d; --text-2:#5b6f87; --text-3:#8fa2b7;
+  --primary:#0b6fb8; --primary-d:#095a95; --primary-l:#e6f1fa;
+  --teal:#0d9488; --teal-l:#e2f5f2;
+  --amber:#b45309; --amber-l:#fef3e2;
+  --red:#c02626; --red-l:#fdeaea;
+  --green:#15803d; --green-l:#e7f6ec;
+  --purple:#6d28d9; --purple-l:#f1ebfd;
+  --radius:12px; --shadow:0 1px 2px rgba(16,40,61,.06),0 6px 20px rgba(16,40,61,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text); font-size:15px; line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
+a{color:var(--primary)}
+
+/* ---------- Header ---------- */
+header{
+  position:sticky;top:0;z-index:60;background:var(--surface);
+  border-bottom:1px solid var(--line); box-shadow:0 1px 3px rgba(16,40,61,.05);
+}
+.hdr{display:flex;align-items:center;gap:16px;padding:0 20px;height:62px;max-width:1560px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand .logo{
+  width:36px;height:36px;border-radius:10px;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--primary),var(--teal));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;
+}
+.brand .t1{font-size:15.5px;font-weight:800;line-height:1.2;white-space:nowrap}
+.brand .t2{font-size:11.5px;color:var(--text-3);line-height:1.2;white-space:nowrap}
+.hdr .spacer{flex:1}
+.pill{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;
+  font-size:12.5px;font-weight:600;border:1px solid var(--line-strong);background:var(--surface-2);
+  cursor:pointer;white-space:nowrap
+}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);flex:0 0 auto}
+.pill.ok{background:var(--green-l);border-color:#bfe3cc;color:var(--green)} .pill.ok .dot{background:var(--green)}
+.pill.bad{background:var(--red-l);border-color:#f2c9c9;color:var(--red)} .pill.bad .dot{background:var(--red)}
+.pill.warn{background:var(--amber-l);border-color:#f0d5a8;color:var(--amber)} .pill.warn .dot{background:var(--amber)}
+
+.rolepick{position:relative}
+.rolebtn{
+  display:flex;align-items:center;gap:9px;padding:6px 12px;border-radius:10px;cursor:pointer;
+  border:1px solid var(--line-strong);background:var(--surface);
+}
+.rolebtn .av{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:14px;flex:0 0 auto}
+.rolebtn .nm{font-weight:700;font-size:13.5px;line-height:1.15}
+.rolebtn .sub{font-size:11px;color:var(--text-3);line-height:1.15}
+.menu{
+  position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);width:290px;padding:6px;display:none
+}
+.menu.open{display:block}
+.menu .mi{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:9px;cursor:pointer}
+.menu .mi:hover{background:var(--surface-2)}
+.menu .mi.active{background:var(--primary-l)}
+.menu .mi .av{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto}
+.menu .mi .nm{font-weight:700;font-size:13.5px}
+.menu .mi .sub{font-size:11.5px;color:var(--text-2);line-height:1.4}
+
+/* ---------- Layout ---------- */
+.shell{display:flex;gap:22px;max-width:1560px;margin:0 auto;padding:22px 20px 60px;align-items:flex-start}
+nav.side{width:232px;flex:0 0 232px;position:sticky;top:84px}
+.navgrp{margin-bottom:18px}
+.navgrp .lbl{font-size:11px;font-weight:800;color:var(--text-3);letter-spacing:.09em;padding:0 12px 7px}
+.navitem{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;
+  font-size:14px;font-weight:600;color:var(--text-2);margin-bottom:2px
+}
+.navitem:hover{background:#e3ebf4;color:var(--text)}
+.navitem.active{background:var(--surface);color:var(--primary);box-shadow:var(--shadow)}
+.navitem .ic{width:20px;text-align:center;flex:0 0 auto;font-size:15px}
+.navitem .badge{margin-left:auto;font-size:11px;font-weight:800;background:var(--primary);color:#fff;border-radius:999px;padding:1px 7px}
+main{flex:1;min-width:0}
+
+/* ---------- Cards ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+.card > .ch{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface)}
+.card > .ch h3{font-size:15.5px}
+.card > .ch .sub{font-size:12px;color:var(--text-3);font-weight:500}
+.card > .cb{padding:18px}
+.card > .cb.tight{padding:0}
+.ch .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+.pagehead{margin-bottom:18px}
+.pagehead h2{font-size:22px;margin-bottom:3px}
+.pagehead p{margin:0;color:var(--text-2);font-size:13.5px}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:9px;border:1px solid var(--line-strong);
+  background:var(--surface);font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;transition:.12s
+}
+.btn:hover{background:var(--surface-2);border-color:var(--text-3)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.pri:hover{background:var(--primary-d);border-color:var(--primary-d)}
+.btn.teal{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.teal:hover{filter:brightness(.93)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--primary)}
+.btn.ghost:hover{background:var(--primary-l)}
+.btn.sm{padding:5px 11px;font-size:12.5px;border-radius:8px}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn.block{width:100%;justify-content:center}
+
+/* ---------- Forms ---------- */
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1100px){.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:5px}
+.field label .req{color:var(--red)}
+.field input,.field select,.field textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);outline:none
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-l)}
+.field textarea{resize:vertical;min-height:76px;line-height:1.6}
+.field .hint{font-size:11.5px;color:var(--text-3);margin-top:4px}
+.chiprow{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.chip{padding:5px 11px;border:1px solid var(--line-strong);border-radius:999px;font-size:12.5px;cursor:pointer;background:var(--surface-2);font-weight:600}
+.chip:hover{border-color:var(--primary);color:var(--primary)}
+.formfoot{display:flex;gap:10px;align-items:center;margin-top:16px;padding-top:15px;border-top:1px dashed var(--line)}
+.formfoot .note{font-size:12px;color:var(--text-3);margin-left:auto}
+
+/* ---------- Tables / lists ---------- */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11.5px;color:var(--text-3);letter-spacing:.05em;font-weight:800;padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr.clk{cursor:pointer}
+tbody tr.clk:hover{background:var(--primary-l)}
+tbody tr.sel{background:var(--primary-l)}
+
+.tag{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:6px;font-size:11.5px;font-weight:700;background:var(--surface-2);border:1px solid var(--line-strong);color:var(--text-2);white-space:nowrap}
+.tag.blue{background:var(--primary-l);border-color:#bcdcf2;color:var(--primary-d)}
+.tag.teal{background:var(--teal-l);border-color:#b7e5df;color:#0b7f74}
+.tag.green{background:var(--green-l);border-color:#bfe3cc;color:var(--green)}
+.tag.amber{background:var(--amber-l);border-color:#f0d5a8;color:var(--amber)}
+.tag.red{background:var(--red-l);border-color:#f2c9c9;color:var(--red)}
+.tag.purple{background:var(--purple-l);border-color:#dcc9fa;color:var(--purple)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:var(--text-2)}
+
+.empty{padding:44px 20px;text-align:center;color:var(--text-3)}
+.empty .ic{font-size:34px;opacity:.5;display:block;margin-bottom:8px}
+.empty .t{font-weight:700;color:var(--text-2);margin-bottom:3px}
+.empty .s{font-size:13px}
+
+.alert{display:flex;gap:11px;padding:13px 15px;border-radius:10px;border:1px solid;margin-bottom:14px;font-size:13.5px;line-height:1.6}
+.alert .ic{flex:0 0 auto;font-size:16px;line-height:1.4}
+.alert.red{background:var(--red-l);border-color:#f2c9c9;color:#8f1d1d}
+.alert.amber{background:var(--amber-l);border-color:#f0d5a8;color:#8a4208}
+.alert.blue{background:var(--primary-l);border-color:#bcdcf2;color:var(--primary-d)}
+.alert.green{background:var(--green-l);border-color:#bfe3cc;color:#146334}
+.alert b{font-weight:800}
+
+/* ---------- Patient bar ---------- */
+.pbar{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:13px 17px;margin-bottom:18px;box-shadow:var(--shadow);flex-wrap:wrap}
+.pbar .av{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0b6fb8,#0d9488);color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px;flex:0 0 auto}
+.pbar .nm{font-weight:800;font-size:16px;line-height:1.25}
+.pbar .meta{font-size:12.5px;color:var(--text-2)}
+.pbar .r{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* ---------- Stats ---------- */
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;box-shadow:var(--shadow)}
+.stat .k{font-size:12px;color:var(--text-3);font-weight:700;letter-spacing:.03em}
+.stat .v{font-size:26px;font-weight:800;line-height:1.25;margin-top:2px}
+.stat .d{font-size:12px;color:var(--text-2)}
+
+/* ---------- Timeline ---------- */
+.tl{position:relative;padding-left:30px}
+.tl:before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tlitem{position:relative;padding-bottom:20px}
+.tlitem:last-child{padding-bottom:0}
+.tlitem .knob{position:absolute;left:-27px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--surface);border:2px solid var(--line-strong);display:grid;place-items:center;font-size:10px}
+.tlitem.done .knob{border-color:var(--teal);background:var(--teal-l);color:var(--teal)}
+.tlitem .th{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tlitem .tt{font-weight:700;font-size:14px}
+.tlitem .tm{font-size:12px;color:var(--text-3)}
+.tlitem .tb{font-size:13.5px;color:var(--text-2);margin-top:3px}
+
+/* ---------- Flow steps ---------- */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:1000px){.flow{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.flow{grid-template-columns:1fr}}
+.step{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2);position:relative}
+.step.on{background:var(--teal-l);border-color:#a9e0d8}
+.step .n{position:absolute;top:10px;right:11px;font-size:11px;font-weight:800;color:var(--text-3)}
+.step .ttl{font-weight:800;font-size:13.5px;margin-bottom:3px;padding-right:22px}
+.step .rs{font-size:11.5px;color:var(--text-3);font-family:ui-monospace,monospace}
+.step .st{margin-top:7px;font-size:12px;font-weight:700}
+.step.on .st{color:var(--teal)}
+.step .st.wait{color:var(--text-3)}
+
+/* ---------- Toast / loading ---------- */
+#toasts{position:fixed;right:18px;bottom:18px;z-index:200;display:flex;flex-direction:column;gap:9px}
+.toast{background:#16283d;color:#fff;padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:600;box-shadow:0 8px 26px rgba(0,0,0,.24);max-width:400px;animation:tin .2s ease}
+.toast.ok{background:#136b3a} .toast.err{background:#a51f1f} .toast.warn{background:#8a5208}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+.btn:not(.pri):not(.teal):not(.danger) .spin{border-color:rgba(0,0,0,.15);border-top-color:var(--primary)}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading{padding:36px;text-align:center;color:var(--text-3);font-size:13.5px}
+
+/* ---------- Modal ---------- */
+.backdrop{position:fixed;inset:0;background:rgba(16,40,61,.5);z-index:150;display:none;align-items:flex-start;justify-content:center;padding:60px 20px;overflow:auto}
+.backdrop.open{display:flex}
+.modal{background:var(--surface);border-radius:14px;width:100%;max-width:760px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+.modal .mh{display:flex;align-items:center;gap:10px;padding:15px 20px;border-bottom:1px solid var(--line)}
+.modal .mh h3{font-size:16px}
+.modal .mb{padding:20px;max-height:66vh;overflow:auto}
+.modal .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--surface-2)}
+pre.json{background:#0f1c2b;color:#cfe3f5;padding:15px;border-radius:10px;overflow:auto;font-size:12px;line-height:1.6;max-height:420px;margin:0}
+pre.json .k{color:#7fd1ff} pre.json .s{color:#a5e3a0} pre.json .n{color:#f5c98a}
+
+/* ---------- Landing / 身分選擇 ---------- */
+#landing{position:fixed;inset:0;z-index:300;background:linear-gradient(160deg,#f2f6fb 0%,#e6eef7 45%,#e2f0ee 100%);overflow:auto;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+#landing.gone{display:none}
+.land{width:100%;max-width:1040px}
+.land .top{text-align:center;margin-bottom:34px}
+.land .lg{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--primary),var(--teal));display:grid;place-items:center;color:#fff;font-weight:800;font-size:27px;margin:0 auto 16px;box-shadow:0 10px 30px rgba(11,111,184,.28)}
+.land h1{font-size:29px;margin-bottom:7px;letter-spacing:-.02em}
+.land .sub{color:var(--text-2);font-size:14.5px;max-width:640px;margin:0 auto}
+.land .en{color:var(--text-3);font-size:12px;letter-spacing:.06em;margin-top:5px}
+.land .q{text-align:center;font-size:13px;font-weight:800;color:var(--text-3);letter-spacing:.1em;margin:0 0 14px}
+.rolecards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:980px){.rolecards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.rolecards{grid-template-columns:1fr}}
+.rolecard{background:var(--surface);border:1.5px solid var(--line);border-radius:15px;padding:20px 18px;cursor:pointer;transition:.16s;box-shadow:var(--shadow);text-align:center}
+.rolecard:hover{transform:translateY(-4px);border-color:var(--primary);box-shadow:0 12px 34px rgba(16,40,61,.14)}
+.rolecard .ic{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:26px;margin:0 auto 12px}
+.rolecard .nm{font-weight:800;font-size:16.5px;margin-bottom:2px}
+.rolecard .en{font-size:11.5px;color:var(--text-3);letter-spacing:.05em;margin-bottom:9px}
+.rolecard .ds{font-size:12.5px;color:var(--text-2);line-height:1.6;min-height:62px}
+.rolecard .go{margin-top:12px;font-size:13px;font-weight:800;color:var(--primary)}
+.land .foot{text-align:center;margin-top:26px;color:var(--text-3);font-size:12.5px}
+.land .foot .st{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid var(--line)}
+
+/* ---------- 影像 ---------- */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.gal .it{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#0f1c2b;cursor:pointer;transition:.14s;position:relative}
+.gal .it:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(16,40,61,.18)}
+.gal .it img{width:100%;height:118px;object-fit:contain;display:block;background:#0f1c2b}
+.gal .it .cap{padding:7px 9px;background:var(--surface);border-top:1px solid var(--line)}
+.gal .it .cap .t{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gal .it .cap .d{font-size:11px;color:var(--text-3)}
+.gal .it .bd{position:absolute;top:6px;left:6px;background:rgba(15,28,43,.82);color:#fff;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px}
+.drop{border:2px dashed var(--line-strong);border-radius:12px;padding:24px;text-align:center;cursor:pointer;background:var(--surface-2);transition:.14s}
+.drop:hover,.drop.over{border-color:var(--primary);background:var(--primary-l)}
+.drop .ic{font-size:28px;display:block;margin-bottom:6px;opacity:.6}
+.drop .t{font-weight:700;font-size:14px}
+.drop .s{font-size:12px;color:var(--text-3);margin-top:3px}
+.thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.thumb{position:relative;width:104px;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#0f1c2b}
+.thumb img{width:100%;height:76px;object-fit:contain;display:block}
+.thumb .x{position:absolute;top:3px;right:3px;background:rgba(192,38,38,.92);color:#fff;border:none;border-radius:6px;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:1}
+.thumb .sz{font-size:10px;color:var(--text-3);text-align:center;padding:2px;background:var(--surface)}
+.lightbox img{width:100%;border-radius:10px;background:#0f1c2b;display:block}
+
+/* ---------- 步驟勾選 ---------- */
+.step.off{opacity:.5;background:var(--surface-2);border-style:dashed}
+.step .tog{position:absolute;top:9px;right:9px;display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;font-weight:800;color:var(--text-3);user-select:none}
+.step .tog input{width:15px;height:15px;accent-color:var(--primary);cursor:pointer;margin:0}
+.step.haspick .ttl{padding-right:62px}
+
+/* misc */
+.kv{display:grid;grid-template-columns:132px 1fr;gap:7px 14px;font-size:13.5px}
+.kv .k{color:var(--text-3);font-weight:700;font-size:12.5px;padding-top:1px}
+.divider{height:1px;background:var(--line);margin:16px 0}
+.sechead{font-size:12px;font-weight:800;color:var(--text-3);letter-spacing:.07em;margin:20px 0 10px}
+.sechead:first-child{margin-top:0}
+.flexrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hide{display:none !important}
+.scroll-x{overflow-x:auto}
+</style>
+</head>
+<body>
+
+<div id="landing">
+  <div class="land">
+    <div class="top">
+      <div class="lg">健</div>
+      <h1>運動損傷復健資訊互通平台</h1>
+      <div class="sub">以 HL7 FHIR 為核心，串起醫院診斷端與康復中心復健端的雙向資料閉環，讓治療師不必再靠患者口頭轉述傷情。</div>
+      <div class="en">SPORTS INJURY REHABILITATION INTEROPERABILITY PLATFORM · 一健FHIR</div>
+    </div>
+    <div class="q">請選擇你的身分以進入系統</div>
+    <div class="rolecards" id="landCards"></div>
+    <div class="foot">
+      <span class="st"><span class="dot" id="landDot" style="width:8px;height:8px;border-radius:50%;background:#8fa2b7;display:inline-block"></span>
+      <span id="landSrv">正在連線 FHIR 伺服器…</span></span>
+      <div style="margin-top:9px">身分僅決定你能操作的功能與可見的資料範圍；進入後仍可從右上角隨時切換。</div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="hdr">
+    <div class="brand">
+      <div class="logo">健</div>
+      <div>
+        <div class="t1">運動損傷復健資訊互通平台</div>
+        <div class="t2">Sports Injury Rehabilitation Interoperability Platform · 一健FHIR</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="pill" id="srvPill" onclick="go('settings')"><span class="dot"></span><span id="srvTxt">連線中…</span></div>
+    <div class="rolepick">
+      <div class="rolebtn" onclick="document.getElementById('roleMenu').classList.toggle('open');event.stopPropagation()">
+        <div class="av" id="roleAv">🩺</div>
+        <div>
+          <div class="nm" id="roleNm">門診醫師</div>
+          <div class="sub" id="roleSub">Practitioner</div>
+        </div>
+        <span style="color:var(--text-3);font-size:11px">▼</span>
+      </div>
+      <div class="menu" id="roleMenu"></div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="side" id="side"></nav>
+  <main id="main"><div class="loading">載入中…</div></main>
+</div>
+
+<div class="backdrop" id="backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mh"><h3 id="modalTitle">—</h3><div style="margin-left:auto"><button class="btn sm" onclick="closeModal()">關閉</button></div></div>
+    <div class="mb" id="modalBody"></div>
+    <div class="mf" id="modalFoot"></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* ============================================================
+   一健FHIR · 運動損傷復健資訊互通平台
+   單檔前端 App，資料層直連 HAPI FHIR Server (FHIR R4)
+   ============================================================ */
+
+/* ---------- 設定 ---------- */
+const TAG_SYSTEM  = 'http://ihuanfhir.org/platform';
+const SPORT_EXT   = 'http://ihuanfhir.org/StructureDefinition/sport';
+const FLOW_EXT    = 'http://ihuanfhir.org/StructureDefinition/flow-steps';
+const MRN_SYSTEM  = 'urn:ihuanfhir:mrn';
+const DEFAULT_BASE = 'https://hapi.fhir.org/baseR4';
+
+const CFG = {
+  base:      localStorage.getItem('ih_base')      || DEFAULT_BASE,
+  workspace: localStorage.getItem('ih_workspace') || 'team-ihuanfhir',
+  offline:   localStorage.getItem('ih_offline') === '1',
+  center:    localStorage.getItem('ih_center')    || '康健運動復健中心',
+};
+function saveCfg(){
+  localStorage.setItem('ih_base',CFG.base);
+  localStorage.setItem('ih_workspace',CFG.workspace);
+  localStorage.setItem('ih_offline',CFG.offline?'1':'0');
+  localStorage.setItem('ih_center',CFG.center);
+}
+const TAG = () => ({system:TAG_SYSTEM, code:CFG.workspace});
+
+/* ---------- 角色定義 ---------- */
+const ROLES = {
+  practitioner:{key:'practitioner',name:'門診醫師',en:'Practitioner',icon:'🩺',color:'var(--primary-l)',
+    desc:'骨科／復健科醫師：登錄診斷、開立運動處方箋與禁忌、回診追蹤復健數據'},
+  radiographer:{key:'radiographer',name:'放射師',en:'Radiographer',icon:'🩻',color:'var(--purple-l)',
+    desc:'執行 X 光／MRI 檢查，上傳影像檢查紀錄與 PACS 連結'},
+  therapist:{key:'therapist',name:'康復中心治療師',en:'Therapist',icon:'🏋️',color:'var(--teal-l)',
+    desc:'物理治療師／運動防護員：調閱診斷、擬定復健計畫、記錄療程與量測'},
+  patient:{key:'patient',name:'患者（運動員）',en:'Patient',icon:'🏃',color:'var(--amber-l)',
+    desc:'管理個人資料與授權、查看完整歷程、回傳居家自主訓練數據'},
+};
+
+/* 導覽列（依角色） */
+const NAV = {
+  practitioner:[
+    {grp:'臨床作業',items:[
+      {id:'home',   ic:'🏠',t:'資料閉環總覽'},
+      {id:'roster', ic:'👥',t:'患者管理'},
+      {id:'dx',     ic:'📋',t:'門診診斷登錄'},
+      {id:'rx',     ic:'📝',t:'運動處方箋'},
+      {id:'followup',ic:'📈',t:'回診追蹤'},
+      {id:'inbox',  ic:'📨',t:'治療師回覆',badge:'md'},
+    ]},
+    {grp:'系統',items:[
+      {id:'perm',ic:'🔐',t:'角色權限矩陣'},
+      {id:'settings',ic:'⚙️',t:'伺服器與檢測'},
+    ]},
+  ],
+  radiographer:[
+    {grp:'影像作業',items:[
+      {id:'home',   ic:'🏠',t:'資料閉環總覽'},
+      {id:'roster', ic:'👥',t:'患者查詢'},
+      {id:'imaging',ic:'🩻',t:'影像檢查登錄'},
+    ]},
+    {grp:'系統',items:[
+      {id:'perm',ic:'🔐',t:'角色權限矩陣'},
+      {id:'settings',ic:'⚙️',t:'伺服器與檢測'},
+    ]},
+  ],
+  therapist:[
+    {grp:'復健作業',items:[
+      {id:'home',    ic:'🏠',t:'資料閉環總覽'},
+      {id:'intake',  ic:'🔓',t:'授權患者清單'},
+      {id:'review',  ic:'📖',t:'診斷資訊調閱'},
+      {id:'careplan',ic:'🗂️',t:'復健計畫擬定'},
+      {id:'session', ic:'🏋️',t:'療程與量測紀錄'},
+      {id:'homerx',  ic:'🏠',t:'居家復健指派'},
+      {id:'feedback',ic:'✉️',t:'回覆主治醫師',badge:'pt'},
+    ]},
+    {grp:'系統',items:[
+      {id:'perm',ic:'🔐',t:'角色權限矩陣'},
+      {id:'settings',ic:'⚙️',t:'伺服器與檢測'},
+    ]},
+  ],
+  patient:[
+    {grp:'我的健康',items:[
+      {id:'home',   ic:'🏠',t:'資料閉環總覽'},
+      {id:'me',     ic:'🙋',t:'我的基本資料'},
+      {id:'record', ic:'📜',t:'我的完整病歷'},
+      {id:'consent',ic:'🔐',t:'隱私授權管理'},
+      {id:'homelog',ic:'🏠',t:'居家自主回報'},
+    ]},
+    {grp:'系統',items:[
+      {id:'perm',ic:'🔐',t:'角色權限矩陣'},
+      {id:'settings',ic:'⚙️',t:'伺服器與檢測'},
+    ]},
+  ],
+};
+
+/* ---------- 全域狀態 ---------- */
+const S = {
+  role:'practitioner',
+  entered:false,       // 是否已通過身分選擇畫面
+  view:'home',
+  patient:null,        // 目前選定的 Patient resource
+  data:{},             // 目前患者的各類資源 {Condition:[],...}
+  patients:[],
+  serverOk:null,
+  busy:false,
+  pendingImgs:[],      // 待上傳的影像（已壓縮）
+};
+
+/* ============================================================
+   FHIR Client
+   ============================================================ */
+const LOCAL_KEY = 'ih_local_store';
+const Local = {
+  all(){ try{return JSON.parse(localStorage.getItem(LOCAL_KEY)||'{}')}catch(e){return{}} },
+  save(o){ localStorage.setItem(LOCAL_KEY,JSON.stringify(o)) },
+  create(res){
+    const db=Local.all(); const t=res.resourceType;
+    db[t]=db[t]||[];
+    const copy=JSON.parse(JSON.stringify(res));
+    copy.id='loc-'+Math.random().toString(36).slice(2,9);
+    copy.meta=Object.assign({},copy.meta,{lastUpdated:new Date().toISOString(),versionId:'1'});
+    db[t].push(copy); Local.save(db); return copy;
+  },
+  update(res){
+    const db=Local.all(); const t=res.resourceType; db[t]=db[t]||[];
+    const i=db[t].findIndex(x=>x.id===res.id);
+    const copy=JSON.parse(JSON.stringify(res));
+    copy.meta=Object.assign({},copy.meta,{lastUpdated:new Date().toISOString()});
+    if(i>=0) db[t][i]=copy; else db[t].push(copy);
+    Local.save(db); return copy;
+  },
+  search(t,params){
+    const db=Local.all(); let list=(db[t]||[]).slice();
+    const ws=CFG.workspace;
+    list=list.filter(r=>(r.meta&&r.meta.tag||[]).some(g=>g.code===ws));
+    if(params.subject) list=list.filter(r=>{
+      const s=r.subject||r.patient; return s && s.reference===params.subject;
+    });
+    if(params.patient) list=list.filter(r=>{
+      const s=r.patient||r.subject; return s && s.reference===params.patient;
+    });
+    if(params.name) list=list.filter(r=>JSON.stringify(r.name||'').includes(params.name));
+    list.sort((a,b)=>String((b.meta||{}).lastUpdated||'').localeCompare(String((a.meta||{}).lastUpdated||'')));
+    return list;
+  }
+};
+
+const FHIR = {
+  url(path,params){
+    let u=CFG.base.replace(/\/+$/,'')+'/'+path;
+    const q=new URLSearchParams(params||{});
+    q.set('_format','json');
+    return u+'?'+q.toString();
+  },
+  async req(method,path,body,params){
+    const opts={method,headers:{'Accept':'application/fhir+json'}};
+    if(body){opts.headers['Content-Type']='application/fhir+json';opts.body=JSON.stringify(body)}
+    const res=await fetch(this.url(path,params),opts);
+    const txt=await res.text();
+    let json=null; try{json=txt?JSON.parse(txt):null}catch(e){}
+    if(!res.ok){
+      const msg=json&&json.issue?json.issue.map(i=>i.diagnostics||i.details&&i.details.text||i.code).join('；'):txt.slice(0,300);
+      const err=new Error('['+res.status+'] '+(msg||res.statusText)); err.outcome=json; err.status=res.status; throw err;
+    }
+    return json;
+  },
+  /* 建立資源：自動蓋上工作區 tag，達成公開測試站的資料隔離 */
+  async create(res){
+    res.meta=res.meta||{}; res.meta.tag=[TAG()];
+    if(CFG.offline) return Local.create(res);
+    return await this.req('POST',res.resourceType,res);
+  },
+  async update(res){
+    res.meta=res.meta||{}; res.meta.tag=[TAG()];
+    if(CFG.offline) return Local.update(res);
+    return await this.req('PUT',res.resourceType+'/'+res.id,res);
+  },
+  async search(type,params={}){
+    if(CFG.offline) return Local.search(type,params);
+    const p=Object.assign({_tag:TAG_SYSTEM+'|'+CFG.workspace,_count:'100'},params);
+    const b=await this.req('GET',type,null,p);
+    return (b.entry||[]).map(e=>e.resource).filter(r=>r&&r.resourceType===type);
+  },
+  async ping(){
+    if(CFG.offline) return true;
+    await this.req('GET','metadata',null,{_summary:'true'});
+    return true;
+  }
+};
+
+/* ============================================================
+   小工具
+   ============================================================ */
+const $  = s=>document.querySelector(s);
+const esc = s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = ()=>new Date().toISOString().slice(0,10);
+const nowLocal = ()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
+function fmtDT(s){ if(!s)return'—'; const d=new Date(s); if(isNaN(d))return s;
+  return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function fmtD(s){ if(!s)return'—'; return String(s).slice(0,10).replace(/-/g,'/'); }
+function age(b){ if(!b)return'—'; const d=new Date(b),n=new Date(); let a=n.getFullYear()-d.getFullYear();
+  if(n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))a--; return a+' 歲'; }
+function pname(p){ if(!p)return'—'; const n=(p.name||[])[0]||{}; return n.text||[(n.family||'')+(((n.given||[]).join(''))||'')].join('')||'（未命名）'; }
+function psport(p){ const e=((p||{}).extension||[]).find(x=>x.url===SPORT_EXT); return e?e.valueString:''; }
+function pmrn(p){ const i=((p||{}).identifier||[]).find(x=>x.system===MRN_SYSTEM)||((p||{}).identifier||[])[0]; return i?i.value:''; }
+function gender(g){ return {male:'男',female:'女',other:'其他',unknown:'未知'}[g]||'—'; }
+function cc(c){ if(!c)return''; if(Array.isArray(c))c=c[0]; if(!c)return'';
+  return c.text||((c.coding||[])[0]||{}).display||((c.coding||[])[0]||{}).code||''; }
+function notes(r){ return ((r||{}).note||[]).map(n=>n.text).filter(Boolean).join('\n'); }
+function toast(msg,kind){
+  const d=document.createElement('div'); d.className='toast '+(kind||''); d.textContent=msg;
+  $('#toasts').appendChild(d); setTimeout(()=>{d.style.opacity='0';d.style.transition='.3s';setTimeout(()=>d.remove(),320)},kind==='err'?5200:2800);
+}
+function openModal(title,html,footHtml){
+  $('#modalTitle').textContent=title; $('#modalBody').innerHTML=html;
+  $('#modalFoot').innerHTML=footHtml||'<button class="btn" onclick="closeModal()">關閉</button>';
+  $('#backdrop').classList.add('open');
+}
+function closeModal(){ $('#backdrop').classList.remove('open') }
+function showJSON(obj,title){
+  const j=JSON.stringify(obj,null,2)
+    .replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))
+    .replace(/"([^"]+)":/g,'"<span class="k">$1</span>":')
+    .replace(/: "([^"]*)"/g,': "<span class="s">$1</span>"')
+    .replace(/: (\d+(\.\d+)?)/g,': <span class="n">$1</span>');
+  openModal(title||'FHIR 原始資料','<pre class="json">'+j+'</pre>');
+}
+function btnBusy(btn,on,label){
+  if(!btn)return;
+  if(on){btn.dataset.old=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="spin"></span>'+(label||'處理中…')}
+  else{btn.disabled=false;if(btn.dataset.old)btn.innerHTML=btn.dataset.old}
+}
+function val(id){ const e=document.getElementById(id); return e?e.value.trim():'' }
+function setVal(id,v){ const e=document.getElementById(id); if(e)e.value=v }
+function fill(id,v){ setVal(id,v); const e=document.getElementById(id); if(e)e.focus() }
+
+/* ============================================================
+   Router / Chrome
+   ============================================================ */
+function setRole(r){
+  S.role=r; S.view='home';
+  document.getElementById('roleMenu').classList.remove('open');
+  renderChrome(); render();
+}
+
+/* ---------- 身分選擇畫面 ---------- */
+function renderLanding(){
+  $('#landCards').innerHTML=Object.values(ROLES).map(r=>`
+    <div class="rolecard" onclick="enterAs('${r.key}')">
+      <div class="ic" style="background:${r.color}">${r.icon}</div>
+      <div class="nm">${r.name}</div>
+      <div class="en">${r.en.toUpperCase()}</div>
+      <div class="ds">${r.desc}</div>
+      <div class="go">以此身分進入 →</div>
+    </div>`).join('');
+}
+function landingStatus(){
+  const dot=$('#landDot'), txt=$('#landSrv'); if(!dot)return;
+  if(CFG.offline){dot.style.background='#b45309';txt.textContent='本機離線模式（不需網路）'}
+  else if(S.serverOk===true){dot.style.background='#15803d';txt.textContent='已連線 '+CFG.base}
+  else if(S.serverOk===false){dot.style.background='#c02626';txt.textContent='FHIR 伺服器連線失敗 — 進入後可於「伺服器與檢測」切換離線模式'}
+  else{dot.style.background='#8fa2b7';txt.textContent='正在連線 FHIR 伺服器…'}
+}
+function enterAs(r){
+  S.role=r; S.entered=true; S.view='home';
+  $('#landing').classList.add('gone');
+  renderChrome(); render();
+  toast('已以「'+ROLES[r].name+'」身分進入','ok');
+}
+function backToLanding(){
+  S.entered=false; $('#landing').classList.remove('gone');
+  document.getElementById('roleMenu').classList.remove('open');
+  landingStatus(); window.scrollTo({top:0});
+}
+function go(v){ S.view=v; renderChrome(); render(); window.scrollTo({top:0,behavior:'smooth'}) }
+
+function renderChrome(){
+  const r=ROLES[S.role];
+  $('#roleAv').textContent=r.icon; $('#roleAv').style.background=r.color;
+  $('#roleNm').textContent=r.name; $('#roleSub').textContent=r.en;
+  $('#roleMenu').innerHTML=Object.values(ROLES).map(x=>`
+    <div class="mi ${x.key===S.role?'active':''}" onclick="setRole('${x.key}')">
+      <div class="av" style="background:${x.color}">${x.icon}</div>
+      <div><div class="nm">${x.name}</div><div class="sub">${x.desc}</div></div>
+    </div>`).join('')+
+    `<div style="border-top:1px solid var(--line);margin:5px 4px 3px"></div>
+     <div class="mi" onclick="backToLanding()"><div class="av" style="background:var(--surface-2)">↩</div>
+     <div><div class="nm">回身分選擇畫面</div><div class="sub">重新以其他身分登入平台</div></div></div>`;
+  $('#side').innerHTML=NAV[S.role].map(g=>`
+    <div class="navgrp"><div class="lbl">${g.grp}</div>
+      ${g.items.map(i=>{const n=i.badge?unreadCount(i.badge):0;
+        return `<div class="navitem ${i.id===S.view?'active':''}" onclick="go('${i.id}')">
+        <span class="ic">${i.ic}</span><span>${i.t}</span>${n?`<span class="badge">${n}</span>`:''}</div>`}).join('')}
+    </div>`).join('');
+  const p=$('#srvPill'), t=$('#srvTxt');
+  p.className='pill '+(CFG.offline?'warn':S.serverOk===true?'ok':S.serverOk===false?'bad':'');
+  t.textContent=CFG.offline?'本機離線模式':S.serverOk===true?'HAPI FHIR 已連線':S.serverOk===false?'伺服器連線失敗':'連線中…';
+}
+
+/* 患者上下文列 */
+function patientBar(extra){
+  if(!S.patient) return `<div class="alert amber"><span class="ic">⚠️</span><div><b>尚未選擇患者。</b>請先到「${S.role==='therapist'?'授權患者清單':'患者管理'}」選擇一位患者，系統才會載入其 FHIR 資料。
+    <div style="margin-top:8px"><button class="btn sm pri" onclick="go('${S.role==='therapist'?'intake':'roster'}')">前往選擇患者</button></div></div></div>`;
+  const p=S.patient;
+  return `<div class="pbar">
+    <div class="av">${esc(pname(p).slice(0,1))}</div>
+    <div>
+      <div class="nm">${esc(pname(p))} <span class="tag ${consentActive()?'green':'red'}">${consentActive()?'✓ 已授權復健中心':'✕ 未授權'}</span></div>
+      <div class="meta">${gender(p.gender)} · ${age(p.birthDate)} · ${esc(psport(p)||'未填運動項目')} · 病歷號 ${esc(pmrn(p)||'—')} · <span class="mono">Patient/${esc(p.id)}</span></div>
+    </div>
+    <div class="r">
+      ${extra||''}
+      <button class="btn sm" onclick="showJSON(S.patient,'Patient 原始 FHIR')">檢視 FHIR</button>
+      <button class="btn sm" onclick="reloadPatientData(this)">↻ 重新整理</button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   資料載入
+   ============================================================ */
+const CTYPES=['Encounter','Condition','DiagnosticReport','ImagingStudy','Media','ServiceRequest','CarePlan','Procedure','Observation','Consent','Communication'];
+async function loadPatients(){
+  S.patients=await FHIR.search('Patient');
+  return S.patients;
+}
+async function loadPatientData(){
+  if(!S.patient) return;
+  const ref='Patient/'+S.patient.id;
+  const out={};
+  await Promise.all(CTYPES.map(async t=>{
+    try{
+      const params = (t==='Consent') ? {patient:ref} : {subject:ref};
+      out[t]=await FHIR.search(t,params);
+    }catch(e){ out[t]=[]; console.warn(t,e.message) }
+  }));
+  // 依時間排序（新→舊）
+  for(const t in out) out[t].sort((a,b)=>String(resDate(b)).localeCompare(String(resDate(a))));
+  S.data=out;
+}
+function resDate(r){
+  return r.effectiveDateTime||r.issued||r.recordedDate||r.authoredOn||r.created||r.dateTime||r.started||
+    (r.performedPeriod||{}).start||(r.period||{}).start||(r.occurrencePeriod||{}).start||(r.meta||{}).lastUpdated||'';
+}
+async function selectPatient(id,btn,goView){
+  btnBusy(btn,true,'載入中');
+  try{
+    S.patient=S.patients.find(p=>p.id===id)|| await FHIR.req('GET','Patient/'+id);
+    await loadPatientData();
+    const n=CTYPES.reduce((a,t)=>a+(S.data[t]||[]).length,0);
+    toast('已載入 '+pname(S.patient)+' 的完整病歷（'+n+' 筆 FHIR 資源）','ok');
+    if(goView){ S.view=goView; renderChrome(); render(); window.scrollTo({top:0,behavior:'smooth'}) }
+    else render();
+  }catch(e){ toast('載入失敗：'+e.message,'err') }
+  btnBusy(btn,false);
+}
+async function reloadPatientData(btn){
+  btnBusy(btn,true,'讀取');
+  try{ await loadPatientData(); render(); toast('資料已同步','ok') }
+  catch(e){ toast(e.message,'err') }
+  btnBusy(btn,false);
+}
+function consentActive(){
+  const c=(S.data.Consent||[]).filter(x=>x.status==='active'&&(x.provision||{}).type==='permit');
+  return c.length>0;
+}
+function latestConsent(){ return (S.data.Consent||[])[0]||null }
+
+/* ---------- 居家復健處方（category = home-exercise 的 CarePlan） ---------- */
+const HOME_CAT_SYS='http://ihuanfhir.org/CodeSystem/careplan-category';
+const HOME_CAT='home-exercise';
+const HOME_PROC_TEXT='居家自主訓練';
+const FREQ_EXT='http://ihuanfhir.org/StructureDefinition/home-frequency';
+function isHomePlan(c){ return ((c||{}).category||[]).some(x=>(x.coding||[]).some(y=>y.code===HOME_CAT)) }
+function homePlans(){ return (S.data.CarePlan||[]).filter(isHomePlan) }
+function clinicPlans(){ return (S.data.CarePlan||[]).filter(c=>!isHomePlan(c)) }
+function activeHomePlan(){ return homePlans().find(c=>c.status==='active')||homePlans()[0]||null }
+function isHomeProc(p){ return ((p||{}).category||{}).text===HOME_PROC_TEXT }
+function homeProcs(){ return (S.data.Procedure||[]).filter(isHomeProc) }
+function clinicProcs(){ return (S.data.Procedure||[]).filter(p=>!isHomeProc(p)) }
+function procDate(p){ return String(p.performedDateTime||(p.performedPeriod||{}).start||'').slice(0,10) }
+/* 依從率：計畫期間內有打卡的天數 / 應執行天數 */
+function adherence(){
+  const plan=activeHomePlan(); const list=homeProcs();
+  const days=new Set(list.map(procDate).filter(Boolean));
+  if(!plan) return {days:days.size,total:list.length,expected:0,pct:null};
+  const st=new Date((plan.period||{}).start||plan.created||Date.now());
+  const en=new Date(Math.min(Date.now(),new Date((plan.period||{}).end||Date.now()).getTime()));
+  const span=Math.max(1,Math.round((en-st)/864e5)+1);
+  const perWeek=Number(((plan.extension||[]).find(x=>x.url===FREQ_EXT)||{}).valueInteger)||7;
+  const expected=Math.max(1,Math.round(span*perWeek/7));
+  return {days:days.size,total:list.length,expected,pct:Math.min(100,Math.round(days.size/expected*100)),span};
+}
+function doneToday(name){
+  const t=today();
+  return homeProcs().some(p=>procDate(p)===t && cc(p.code)===name);
+}
+
+/* ---------- 治療師 ↔ 醫師 雙向回覆（Communication） ---------- */
+const COMM_SYS='http://ihuanfhir.org/CodeSystem/comm-direction';
+const PT2MD='therapist-to-physician', MD2PT='physician-to-therapist';
+function commDir(c){ const g=((c||{}).category||[]).find(x=>(x.coding||[]).some(y=>y.system===COMM_SYS));
+  return g?((g.coding||[]).find(y=>y.system===COMM_SYS)||{}).code:PT2MD }
+function comms(){ return (S.data.Communication||[]).slice().sort((a,b)=>String(a.sent||'').localeCompare(String(b.sent||''))) }
+function unreadCount(kind){
+  const want=kind==='md'?PT2MD:MD2PT;
+  return comms().filter(c=>commDir(c)===want && !c.received).length;
+}
+function commText(c){ return ((c.payload||[]).map(p=>p.contentString).filter(Boolean).join('\n')) }
+
+/* ============================================================
+   View dispatcher
+   ============================================================ */
+const VIEWS={};
+function render(){
+  const fn=VIEWS[S.view]||VIEWS.home;
+  $('#main').innerHTML=fn();
+}
+
+/* ============================================================
+   共用元件
+   ============================================================ */
+function emptyBox(icon,title,sub,action){
+  return `<div class="empty"><span class="ic">${icon}</span><div class="t">${title}</div><div class="s">${sub||''}</div>${action?'<div style="margin-top:12px">'+action+'</div>':''}</div>`;
+}
+function sectionSelect(id,label,opts,hint){
+  return `<div class="field"><label>${label}</label><select id="${id}">${opts.map(o=>`<option value="${esc(o[0])}">${esc(o[1])}</option>`).join('')}</select>${hint?`<div class="hint">${hint}</div>`:''}</div>`;
+}
+function inputF(id,label,ph,type,req,hint,value){
+  return `<div class="field"><label>${label}${req?' <span class="req">*</span>':''}</label>
+  <input id="${id}" type="${type||'text'}" placeholder="${esc(ph||'')}" value="${esc(value||'')}">${hint?`<div class="hint">${hint}</div>`:''}</div>`;
+}
+function areaF(id,label,ph,req,hint,value){
+  return `<div class="field"><label>${label}${req?' <span class="req">*</span>':''}</label>
+  <textarea id="${id}" placeholder="${esc(ph||'')}">${esc(value||'')}</textarea>${hint?`<div class="hint">${hint}</div>`:''}</div>`;
+}
+function chips(targetId,arr){
+  return `<div class="chiprow">${arr.map(t=>`<span class="chip" onclick="fill('${targetId}',${JSON.stringify(t).replace(/"/g,'&quot;')})">${esc(t)}</span>`).join('')}</div>`;
+}
+function resRow(label,r,onView){
+  return `<tr><td>${label}</td><td class="mono">${r.resourceType}/${r.id}</td><td>${fmtDT(resDate(r))}</td>
+  <td><button class="btn sm ghost" onclick='showJSON(${JSON.stringify(r).replace(/'/g,"&#39;")},"${r.resourceType}")'>JSON</button></td></tr>`;
+}
+
+/* 禁忌警示（來自 ServiceRequest note / orderDetail） */
+function contraBanner(){
+  const srs=(S.data.ServiceRequest||[]);
+  if(!srs.length) return '';
+  const lines=[];
+  srs.forEach(sr=>{ const n=notes(sr); if(n) lines.push(n); });
+  if(!lines.length) return '';
+  return `<div class="alert red"><span class="ic">🚫</span><div><b>醫囑禁忌事項（ServiceRequest）— 執行任何訓練前務必確認</b>
+    <div style="margin-top:5px;white-space:pre-wrap">${esc(lines.join('\n'))}</div></div></div>`;
+}
+
+/* SVG 折線圖 */
+function lineChart(points,opts){
+  opts=opts||{};
+  const W=opts.w||620,H=opts.h||190,PL=44,PR=14,PT=14,PB=28;
+  if(points.length===0) return '<div class="empty" style="padding:26px">尚無量測資料</div>';
+  const vals=points.map(p=>p.y);
+  let min=Math.min(...vals),max=Math.max(...vals);
+  if(min===max){min=min-5;max=max+5}
+  const pad=(max-min)*0.15; min-=pad; max+=pad;
+  const n=points.length;
+  const X=i=>PL+(n===1?(W-PL-PR)/2:i*(W-PL-PR)/(n-1));
+  const Y=v=>PT+(H-PT-PB)*(1-(v-min)/(max-min));
+  const d=points.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.y).toFixed(1)).join(' ');
+  const area=d+` L ${X(n-1).toFixed(1)} ${H-PB} L ${X(0).toFixed(1)} ${H-PB} Z`;
+  const col=opts.color||'#0b6fb8';
+  const gid='g'+Math.random().toString(36).slice(2,7);
+  let grid='';
+  for(let i=0;i<=3;i++){
+    const v=min+(max-min)*i/3, y=Y(v);
+    grid+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="#e6ecf3" stroke-width="1"/>
+      <text x="${PL-7}" y="${(y+4).toFixed(1)}" font-size="10" fill="#8fa2b7" text-anchor="end">${v.toFixed(0)}</text>`;
+  }
+  const dots=points.map((p,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="4" fill="#fff" stroke="${col}" stroke-width="2.5"><title>${esc(p.label||'')} ${p.y}</title></circle>
+    <text x="${X(i).toFixed(1)}" y="${(Y(p.y)-10).toFixed(1)}" font-size="10.5" font-weight="700" fill="${col}" text-anchor="middle">${p.y}</text>`).join('');
+  const xlab=points.map((p,i)=>`<text x="${X(i).toFixed(1)}" y="${H-8}" font-size="9.5" fill="#8fa2b7" text-anchor="middle">${esc((p.label||'').slice(5,10))}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${col}" stop-opacity=".22"/><stop offset="100%" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    ${grid}<path d="${area}" fill="url(#${gid})"/>
+    <path d="${d}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}${xlab}</svg>`;
+}
+
+/* ============================================================
+   VIEW: 資料閉環總覽（所有角色共用）
+   ============================================================ */
+const FLOW_STEPS=[
+  {n:1,t:'受傷就醫建檔',res:'Patient · Encounter',check:d=>!!S.patient&&(d.Encounter||[]).length>0,who:'醫師'},
+  {n:2,t:'影像檢查與上傳',res:'ImagingStudy · Media',check:d=>(d.ImagingStudy||[]).length>0,who:'放射師'},
+  {n:3,t:'判讀與確診',res:'DiagnosticReport · Condition',check:d=>(d.Condition||[]).length>0,who:'醫師'},
+  {n:4,t:'開立運動處方箋',res:'ServiceRequest',check:d=>(d.ServiceRequest||[]).length>0,who:'醫師'},
+  {n:5,t:'患者隱私授權',res:'Consent',check:d=>consentActive(),who:'患者'},
+  {n:6,t:'治療師擬定計畫',res:'CarePlan',check:d=>(d.CarePlan||[]).length>0,who:'治療師'},
+  {n:7,t:'療程執行與居家追蹤',res:'Procedure · Observation · 居家 CarePlan',check:d=>(d.Procedure||[]).length>0&&(d.Observation||[]).length>0,who:'治療師／患者'},
+  {n:8,t:'回診追蹤閉環',res:'Observation 趨勢 · Communication 回覆',check:d=>(d.Observation||[]).length>=2&&(d.Condition||[]).length>0,who:'醫師'},
+];
+/* 醫師可自行決定此個案適用哪幾個步驟（存入 Patient extension，跨裝置同步） */
+function flowEnabled(){
+  const e=((S.patient||{}).extension||[]).find(x=>x.url===FLOW_EXT);
+  if(!e||e.valueString==null) return new Set(FLOW_STEPS.map(s=>s.n));   // 未設定過 → 預設全部啟用
+  const set=new Set(String(e.valueString).split(',').map(x=>Number(x.trim())).filter(n=>n>=1&&n<=8));
+  return set;
+}
+function canPickSteps(){ return S.role==='practitioner' && !!S.patient }
+async function toggleStep(n,el){
+  if(!canPickSteps()) return;
+  const set=flowEnabled();
+  if(set.has(n)) set.delete(n); else set.add(n);
+  const nums=FLOW_STEPS.map(s=>s.n).filter(x=>set.has(x));
+  const p=JSON.parse(JSON.stringify(S.patient));
+  p.extension=(p.extension||[]).filter(x=>x.url!==FLOW_EXT);
+  p.extension.push({url:FLOW_EXT,valueString:nums.join(',')});
+  if(el) el.closest('.step').classList.toggle('off',!set.has(n));
+  try{
+    const r=await FHIR.update(p);
+    S.patient=r; const i=S.patients.findIndex(x=>x.id===r.id); if(i>=0)S.patients[i]=r;
+    toast((set.has(n)?'已啟用 ':'已略過 ')+'步驟 '+n+'：'+FLOW_STEPS[n-1].t,'ok');
+    render();
+  }catch(e){ toast('儲存失敗：'+e.message,'err'); render() }
+}
+async function setAllSteps(all){
+  if(!canPickSteps()) return;
+  const p=JSON.parse(JSON.stringify(S.patient));
+  p.extension=(p.extension||[]).filter(x=>x.url!==FLOW_EXT);
+  p.extension.push({url:FLOW_EXT,valueString:all?FLOW_STEPS.map(s=>s.n).join(','):''});
+  try{ const r=await FHIR.update(p); S.patient=r;
+    const i=S.patients.findIndex(x=>x.id===r.id); if(i>=0)S.patients[i]=r;
+    toast(all?'已啟用全部八個步驟':'已清空，請逐項勾選需要的步驟','ok'); render();
+  }catch(e){ toast('儲存失敗：'+e.message,'err') }
+}
+
+VIEWS.home=function(){
+  const d=S.data,has=!!S.patient;
+  const en=flowEnabled();
+  const active=FLOW_STEPS.filter(s=>en.has(s.n));
+  const done=has?active.filter(s=>s.check(d)).length:0;
+  const cnt=t=>(d[t]||[]).length;
+  return `
+  <div class="pagehead"><h2>資料閉環總覽</h2>
+    <p>診斷 ➔ 運動處方 ➔ 復健執行 ➔ 居家追蹤 ➔ 回診評估：以 FHIR 標準串起醫院與康復中心的雙向資料流。</p></div>
+
+  ${!has?`<div class="alert blue"><span class="ic">👋</span><div><b>歡迎使用一健FHIR 平台。</b>目前尚未選擇患者。你可以：
+    <div class="flexrow" style="margin-top:9px">
+      <button class="btn sm pri" onclick="go('roster')">👥 選擇或新建患者</button>
+      <button class="btn sm teal" onclick="seedDemo(this)">⚡ 一鍵建立完整示範個案</button>
+      <button class="btn sm" onclick="go('settings')">⚙️ 設定 FHIR 伺服器</button>
+    </div></div></div>`:patientBar()}
+
+  ${has?`<div class="grid g4" style="margin-bottom:18px">
+    <div class="stat"><div class="k">閉環完成度</div><div class="v">${done}/${active.length}</div><div class="d">${done===active.length?'✓ 本個案流程已完整閉環':'尚有 '+(active.length-done)+' 個環節未完成'}${active.length<8?'（已略過 '+(8-active.length)+' 步）':''}</div></div>
+    <div class="stat"><div class="k">傷病診斷 Condition</div><div class="v">${cnt('Condition')}</div><div class="d">${esc(cc((d.Condition||[])[0]||{}) .slice(0,18)||'—')}</div></div>
+    <div class="stat"><div class="k">復健療程 Procedure</div><div class="v">${cnt('Procedure')}</div><div class="d">累計已執行次數</div></div>
+    <div class="stat"><div class="k">量測數據 Observation</div><div class="v">${cnt('Observation')}</div><div class="d">場館量測＋居家回報</div></div>
+  </div>`:''}
+
+  <div class="card"><div class="ch"><h3>八步驟工作流程即時狀態</h3>
+    <span class="sub">${canPickSteps()?'醫師可勾選本個案需要哪幾個步驟':'綠色代表該患者已有對應的 FHIR 資源'}</span>
+    ${canPickSteps()?`<div class="right"><button class="btn sm" onclick="setAllSteps(true)">全部啟用</button>
+      <button class="btn sm" onclick="setAllSteps(false)">全部略過</button></div>`:''}</div>
+    <div class="cb">
+      ${canPickSteps()?`<div class="alert blue" style="margin-bottom:14px"><span class="ic">🩺</span><div>
+        <b>流程由醫師決定。</b>並非每個個案都需要走完八步 — 例如輕微肌肉拉傷不需 MRI，可直接取消勾選「影像檢查」；不轉介康復中心的個案可略過第 5-7 步。
+        取消勾選的步驟會變灰、不計入完成度，也不會阻擋後續流程。設定會寫入該患者的 <span class="mono">Patient.extension</span> 並同步到 FHIR 伺服器。</div></div>`:''}
+      ${has&&!canPickSteps()&&active.length<8?`<div class="alert amber" style="margin-bottom:14px"><span class="ic">ℹ️</span><div>
+        主治醫師已為本個案略過 ${8-active.length} 個步驟（灰色卡片），代表這些環節在此個案不適用。</div></div>`:''}
+      <div class="flow">
+      ${FLOW_STEPS.map(s=>{
+        const use=en.has(s.n), on=has&&use&&s.check(d);
+        return `<div class="step ${on?'on':''} ${use?'':'off'} ${canPickSteps()?'haspick':''}">
+        ${canPickSteps()
+          ?`<label class="tog" title="勾選代表本個案需要執行此步驟"><input type="checkbox" ${use?'checked':''} onchange="toggleStep(${s.n},this)">${s.n}</label>`
+          :`<div class="n">${s.n}</div>`}
+        <div class="ttl">${s.t}</div>
+        <div class="rs">${s.res}</div>
+        <div class="st ${on?'':'wait'}">${!use?'⊘ 本個案不適用':on?'✓ 已完成':'○ 待執行'} · ${s.who}</div></div>`}).join('')}
+    </div></div>
+  </div>
+
+  ${has?`<div class="card"><div class="ch"><h3>患者資料時間軸</h3><div class="right">
+    <button class="btn sm" onclick="go('${S.role==='patient'?'record':'followup'}')">完整檢視</button></div></div>
+    <div class="cb">${timelineHTML(8)}</div></div>`:''}
+
+  <div class="card"><div class="ch"><h3>本平台解決的問題</h3></div><div class="cb">
+    <div class="grid g2">
+      <div>
+        <div class="sechead">現況痛點</div>
+        <div class="alert red" style="margin:0"><span class="ic">✕</span><div>治療師只能靠患者<b>口頭轉述</b>或一紙診斷證明書，缺少受傷精確位置、損傷分級、醫囑禁忌 → 憑經驗重新評估 → 溝通成本高、<b>二次傷害風險</b>。</div></div>
+      </div>
+      <div>
+        <div class="sechead">FHIR 互通後</div>
+        <div class="alert green" style="margin:0"><span class="ic">✓</span><div>治療師經患者 <b>Consent</b> 授權後，5 分鐘內讀取結構化的 <b>Condition / DiagnosticReport / ServiceRequest</b>，復健數據再以 <b>Observation</b> 回傳醫師，形成雙向閉環。</div></div>
+      </div>
+    </div>
+  </div></div>`;
+};
+
+function timelineHTML(limit){
+  const d=S.data, items=[];
+  const push=(t,r,title,body,icon)=>items.push({t:resDate(r),title,body,icon,r});
+  (d.Encounter||[]).forEach(r=>push('E',r,'就診紀錄 Encounter',cc(r.serviceType)||'門診','🏥'));
+  (d.ImagingStudy||[]).forEach(r=>{
+    const n=(d.Media||[]).filter(m=>((m.partOf||[])[0]||{}).reference==='ImagingStudy/'+r.id).length;
+    push('I',r,'影像檢查 ImagingStudy',(r.description||'')+' · '+(((r.modality||[])[0]||{}).code||'')+(n?'（已上傳 '+n+' 張影像）':''),'🩻');
+  });
+  (d.Media||[]).forEach(r=>push('M',r,'影像檔案 Media',((r.content||{}).title||'醫學影像')+' · 由 '+((r.operator||{}).display||'放射師')+' 上傳','🖼️'));
+  (d.DiagnosticReport||[]).forEach(r=>push('D',r,'診斷報告 DiagnosticReport',r.conclusion||cc(r.code),'📄'));
+  (d.Condition||[]).forEach(r=>push('C',r,'傷病診斷 Condition',cc(r.code)+'（'+(cc(r.severity)||'未分級')+'）· '+cc(r.bodySite),'🦴'));
+  (d.ServiceRequest||[]).forEach(r=>push('S',r,'運動處方箋 ServiceRequest',(r.orderDetail||[]).map(cc).join('；')||cc(r.code),'📝'));
+  (d.Consent||[]).forEach(r=>push('N',r,'隱私授權 Consent',(r.status==='active'?'已授權 ':'已撤銷 ')+((r.organization||[])[0]||{}).display,'🔐'));
+  (d.CarePlan||[]).forEach(r=>push('P',r,isHomePlan(r)?'居家復健處方 CarePlan':'復健計畫 CarePlan',
+    (r.title||r.description||'')+(isHomePlan(r)?'（'+((r.activity||[]).length)+' 個動作）':''),isHomePlan(r)?'🏠':'🗂️'));
+  (d.Procedure||[]).forEach(r=>push('R',r,isHomeProc(r)?'居家打卡 Procedure':'復健療程 Procedure',cc(r.code),isHomeProc(r)?'🏠':'🏋️'));
+  (d.Communication||[]).forEach(r=>push('K',r,
+    commDir(r)===PT2MD?'治療師回覆醫師 Communication':'醫師回覆治療師 Communication',
+    ((r.topic||{}).text||'')+'：'+commText(r).slice(0,60),'✉️'));
+  (d.Observation||[]).forEach(r=>push('O',r,'量測 Observation',cc(r.code)+'：'+obsVal(r),'📊'));
+  items.sort((a,b)=>String(b.t).localeCompare(String(a.t)));
+  const list=limit?items.slice(0,limit):items;
+  if(!list.length) return emptyBox('📭','此患者尚無任何臨床資料','切換到醫師角色開始登錄診斷，或使用一鍵示範資料。');
+  return '<div class="tl">'+list.map(i=>`<div class="tlitem done"><div class="knob">${i.icon}</div>
+    <div class="th"><span class="tt">${esc(i.title)}</span><span class="tm">${fmtDT(i.t)}</span>
+      <button class="btn sm ghost" onclick='showJSON(${JSON.stringify(i.r).replace(/'/g,"&#39;")},"${i.r.resourceType}")'>FHIR</button></div>
+    <div class="tb">${esc(i.body||'')}</div></div>`).join('')+'</div>'
+    +(limit&&items.length>limit?`<div style="text-align:center;margin-top:6px;color:var(--text-3);font-size:12.5px">另有 ${items.length-limit} 筆較早紀錄</div>`:'');
+}
+function obsVal(o){
+  if(o.valueQuantity) return o.valueQuantity.value+' '+(o.valueQuantity.unit||'');
+  if(o.valueString) return o.valueString;
+  if(o.valueInteger!=null) return o.valueInteger;
+  if(o.valueCodeableConcept) return cc(o.valueCodeableConcept);
+  return '—';
+}
+
+/* ============================================================
+   VIEW: 患者管理（醫師 / 放射師）
+   ============================================================ */
+VIEWS.roster=function(){
+  return `
+  <div class="pagehead"><h2>患者管理</h2><p>建立或查詢運動員基本資料（FHIR <span class="mono">Patient</span>）。選定患者後，系統會載入其全部臨床資源。</p></div>
+
+  <div class="card"><div class="ch"><h3>患者清單</h3><div class="right">
+    <input id="q" placeholder="輸入姓名關鍵字" style="padding:6px 11px;border:1px solid var(--line-strong);border-radius:8px;width:170px">
+    <button class="btn sm" onclick="doSearchPatients(this)">🔍 搜尋</button>
+    <button class="btn sm pri" onclick="doSearchPatients(this,true)">↻ 列出全部</button>
+  </div></div>
+  <div class="cb tight" id="rosterBox">${rosterTable()}</div></div>
+
+  ${ROLES[S.role].key==='practitioner'?`
+  <div class="card"><div class="ch"><h3>新建患者</h3><span class="sub">POST /Patient</span></div><div class="cb">
+    <div class="grid g3">
+      ${inputF('np_name','姓名','王小明',null,true)}
+      ${inputF('np_mrn','病歷號 / 選手編號','MRN'+Math.floor(Math.random()*9000+1000))}
+      ${sectionSelect('np_gender','生理性別',[['male','男'],['female','女'],['other','其他'],['unknown','未知']])}
+      ${inputF('np_birth','出生日期','','date')}
+      ${inputF('np_phone','聯絡電話','0912345678')}
+      ${inputF('np_sport','從事運動項目','籃球',null,false,'寫入 FHIR extension，供復健方案參考')}
+    </div>
+    ${chips('np_sport',['籃球','棒球','足球','排球','田徑','羽球','舉重','自行車','游泳','網球'])}
+    <div class="formfoot">
+      <button class="btn pri" onclick="createPatient(this)">建立 Patient</button>
+      <button class="btn teal" onclick="seedDemo(this)">⚡ 一鍵建立完整示範個案</button>
+      <span class="note">所有資源自動加上 meta.tag <span class="mono">${esc(CFG.workspace)}</span> 以隔離資料</span>
+    </div>
+  </div></div>`:''}`;
+};
+function rosterTable(){
+  if(!S.patients.length) return emptyBox('👥','尚未載入患者','點右上「列出全部」向 FHIR 伺服器查詢，或先建立一位患者。');
+  return `<div class="scroll-x"><table><thead><tr><th>姓名</th><th>病歷號</th><th>性別／年齡</th><th>運動項目</th><th>Patient ID</th><th>更新時間</th><th></th></tr></thead><tbody>
+  ${S.patients.map(p=>`<tr class="clk ${S.patient&&S.patient.id===p.id?'sel':''}" onclick="selectPatient('${p.id}',this)">
+    <td><b>${esc(pname(p))}</b></td><td>${esc(pmrn(p)||'—')}</td><td>${gender(p.gender)} · ${age(p.birthDate)}</td>
+    <td>${esc(psport(p)||'—')}</td><td class="mono">${esc(p.id)}</td><td>${fmtDT((p.meta||{}).lastUpdated)}</td>
+    <td><button class="btn sm pri" onclick="event.stopPropagation();selectPatient('${p.id}',this)">選定</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+async function doSearchPatients(btn,all){
+  btnBusy(btn,true,'查詢中');
+  try{
+    const q=all?'':val('q');
+    S.patients=await FHIR.search('Patient',q?{name:q}:{});
+    const box=document.getElementById('rosterBox'); if(box)box.innerHTML=rosterTable();
+    toast('查到 '+S.patients.length+' 位患者','ok');
+  }catch(e){ toast('查詢失敗：'+e.message,'err') }
+  btnBusy(btn,false);
+}
+async function createPatient(btn){
+  const name=val('np_name'); if(!name) return toast('請輸入姓名','warn');
+  btnBusy(btn,true,'建立中');
+  try{
+    const res={resourceType:'Patient',
+      identifier:[{system:MRN_SYSTEM,value:val('np_mrn')||('MRN'+Date.now().toString().slice(-6))}],
+      name:[{use:'official',text:name,family:name.slice(0,1),given:[name.slice(1)||name]}],
+      gender:val('np_gender'),active:true};
+    if(val('np_birth')) res.birthDate=val('np_birth');
+    if(val('np_phone')) res.telecom=[{system:'phone',value:val('np_phone'),use:'mobile'}];
+    if(val('np_sport')) res.extension=[{url:SPORT_EXT,valueString:val('np_sport')}];
+    const created=await FHIR.create(res);
+    S.patient=created; S.patients.unshift(created); await loadPatientData();
+    toast('已建立 Patient/'+created.id,'ok'); render();
+  }catch(e){ toast('建立失敗：'+e.message,'err') }
+  btnBusy(btn,false);
+}
+
+/* ============================================================
+   VIEW: 門診診斷登錄（醫師）
+   ============================================================ */
+VIEWS.dx=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>門診診斷登錄</h2></div>`+patientBar();
+  const d=S.data;
+  return `
+  <div class="pagehead"><h2>門診診斷登錄</h2><p>建立就診紀錄與結構化診斷：<span class="mono">Encounter → Condition → DiagnosticReport</span>。</p></div>
+  ${patientBar()}
+
+  <div class="card"><div class="ch"><h3>① 建立就診紀錄</h3><span class="sub">POST /Encounter</span>
+    <div class="right"><span class="tag ${(d.Encounter||[]).length?'green':'amber'}">已有 ${(d.Encounter||[]).length} 筆</span></div></div>
+    <div class="cb">
+      <div class="grid g3">
+        ${sectionSelect('en_type','就診類別',[['骨科門診','骨科門診'],['復健科門診','復健科門診'],['急診','急診'],['運動醫學特診','運動醫學特診']])}
+        ${inputF('en_start','就診時間','','datetime-local',false,'',nowLocal())}
+        ${sectionSelect('en_status','狀態',[['finished','已完成 finished'],['in-progress','進行中 in-progress']])}
+      </div>
+      <div class="formfoot"><button class="btn pri" onclick="createEncounter(this)">建立 Encounter</button>
+      <span class="note">Encounter 會被 Condition / DiagnosticReport / ServiceRequest 引用</span></div>
+    </div>
+  </div>
+
+  <div class="card"><div class="ch"><h3>② 登錄傷病診斷</h3><span class="sub">POST /Condition</span>
+    <div class="right"><span class="tag ${(d.Condition||[]).length?'green':'amber'}">已有 ${(d.Condition||[]).length} 筆</span></div></div>
+    <div class="cb">
+      <div class="grid g2">
+        ${inputF('cd_text','診斷名稱','左膝前十字韌帶二級撕裂',null,true)}
+        ${inputF('cd_site','受傷部位 bodySite','左膝 (Left knee)',null,true,'精確到左右側與解剖位置，這正是治療師最缺的資訊')}
+      </div>
+      ${chips('cd_text',['左膝前十字韌帶二級撕裂','右踝外側韌帶扭傷 Grade II','右肩旋轉肌袖部分撕裂','左大腿股二頭肌拉傷 Grade I','腰椎第四五節椎間盤突出'])}
+      <div class="grid g3" style="margin-top:14px">
+        ${sectionSelect('cd_sev','損傷分級 severity',[['第一級 (Grade I) 輕度','第一級 (Grade I) 輕度'],['第二級 (Grade II) 中度','第二級 (Grade II) 中度'],['第三級 (Grade III) 重度／完全斷裂','第三級 (Grade III) 重度／完全斷裂']])}
+        ${inputF('cd_onset','受傷日期','','date',false,'',today())}
+        ${sectionSelect('cd_ver','診斷確認狀態',[['confirmed','已確診 confirmed'],['provisional','暫定 provisional'],['differential','鑑別診斷 differential']])}
+      </div>
+      ${areaF('cd_note','受傷機轉與臨床發現','例：籃球落地時膝關節外翻扭轉，當下聽到 pop 聲，Lachman test 陽性，前抽屜試驗鬆弛。')}
+      <div class="formfoot"><button class="btn pri" onclick="createCondition(this)">建立 Condition</button></div>
+      ${(d.Condition||[]).length?`<div class="divider"></div><div class="sechead">已登錄診斷</div>
+      <div class="scroll-x"><table><thead><tr><th>診斷</th><th>部位</th><th>分級</th><th>受傷日</th><th></th></tr></thead><tbody>
+      ${d.Condition.map(c=>`<tr><td><b>${esc(cc(c.code))}</b></td><td>${esc(cc(c.bodySite))}</td><td><span class="tag amber">${esc(cc(c.severity)||'—')}</span></td><td>${fmtD(c.onsetDateTime)}</td>
+      <td><button class="btn sm ghost" onclick='showJSON(${JSON.stringify(c).replace(/'/g,"&#39;")},"Condition")'>FHIR</button></td></tr>`).join('')}
+      </tbody></table></div>`:''}
+    </div>
+  </div>
+
+  ${mediaCard('🖼️ 放射師上傳的影像','點縮圖放大檢視，可對照撰寫報告')}
+
+  <div class="card"><div class="ch"><h3>③ 撰寫診斷報告</h3><span class="sub">POST /DiagnosticReport（可連結影像）</span>
+    <div class="right"><span class="tag ${(d.DiagnosticReport||[]).length?'green':'amber'}">已有 ${(d.DiagnosticReport||[]).length} 筆</span></div></div>
+    <div class="cb">
+      ${(d.ImagingStudy||[]).length?'':'<div class="alert blue"><span class="ic">ℹ️</span><div>此患者尚無 <b>ImagingStudy</b>。可切換到「放射師」角色先登錄 X 光／MRI 檢查，報告即可自動連結影像。</div></div>'}
+      <div class="grid g2">
+        ${inputF('dr_title','報告標題','左膝 MRI 判讀報告',null,true)}
+        <div class="field"><label>連結影像檢查 ImagingStudy</label>
+          <select id="dr_img"><option value="">（不連結）</option>
+          ${(d.ImagingStudy||[]).map(i=>`<option value="${i.id}">${esc(i.description||'影像')} · ${fmtD(i.started)} · ${i.id}</option>`).join('')}</select></div>
+      </div>
+      ${areaF('dr_concl','判讀結論 conclusion','例：ACL 中段訊號中斷，符合 Grade II 部分撕裂；內外側半月板未見明顯撕裂；關節腔中量積液。',true)}
+      <div class="formfoot"><button class="btn pri" onclick="createReport(this)">建立 DiagnosticReport</button></div>
+      ${(d.DiagnosticReport||[]).length?`<div class="divider"></div><div class="sechead">已發出報告</div>
+      ${d.DiagnosticReport.map(r=>`<div class="alert blue" style="margin-bottom:9px"><span class="ic">📄</span><div>
+        <b>${esc(cc(r.code))}</b> · ${fmtDT(r.issued||r.effectiveDateTime)} <span class="tag green">${esc(r.status)}</span>
+        <div style="margin-top:4px">${esc(r.conclusion||'')}</div></div></div>`).join('')}`:''}
+    </div>
+  </div>`;
+};
+async function createEncounter(btn){
+  btnBusy(btn,true,'建立中');
+  try{
+    const r=await FHIR.create({resourceType:'Encounter',status:val('en_status')||'finished',
+      class:{system:'http://terminology.hl7.org/CodeSystem/v3-ActCode',code:'AMB',display:'ambulatory'},
+      serviceType:{text:val('en_type')},subject:subjRef(),
+      period:{start:new Date(val('en_start')||Date.now()).toISOString()}});
+    toast('已建立 Encounter/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+function subjRef(){ return {reference:'Patient/'+S.patient.id,display:pname(S.patient)} }
+function lastEnc(){ const e=(S.data.Encounter||[])[0]; return e?{reference:'Encounter/'+e.id}:undefined }
+async function createCondition(btn){
+  if(!val('cd_text')) return toast('請填寫診斷名稱','warn');
+  btnBusy(btn,true,'建立中');
+  try{
+    const res={resourceType:'Condition',
+      clinicalStatus:{coding:[{system:'http://terminology.hl7.org/CodeSystem/condition-clinical',code:'active'}]},
+      verificationStatus:{coding:[{system:'http://terminology.hl7.org/CodeSystem/condition-ver-status',code:val('cd_ver')||'confirmed'}]},
+      category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/condition-category',code:'encounter-diagnosis'}],text:'運動損傷'}],
+      code:{text:val('cd_text')},bodySite:[{text:val('cd_site')}],severity:{text:val('cd_sev')},
+      subject:subjRef(),recordedDate:today()};
+    if(lastEnc()) res.encounter=lastEnc();
+    if(val('cd_onset')) res.onsetDateTime=val('cd_onset');
+    if(val('cd_note')) res.note=[{text:val('cd_note')}];
+    const r=await FHIR.create(res);
+    toast('已建立 Condition/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+async function createReport(btn){
+  if(!val('dr_concl')) return toast('請填寫判讀結論','warn');
+  btnBusy(btn,true,'建立中');
+  try{
+    const res={resourceType:'DiagnosticReport',status:'final',
+      category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/v2-0074',code:'RAD',display:'Radiology'}]}],
+      code:{text:val('dr_title')||'診斷報告'},subject:subjRef(),
+      effectiveDateTime:new Date().toISOString(),issued:new Date().toISOString(),
+      conclusion:val('dr_concl')};
+    if(lastEnc()) res.encounter=lastEnc();
+    if(val('dr_img')) res.imagingStudy=[{reference:'ImagingStudy/'+val('dr_img')}];
+    const r=await FHIR.create(res);
+    toast('已建立 DiagnosticReport/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+
+/* ============================================================
+   VIEW: 運動處方箋（醫師）
+   ============================================================ */
+VIEWS.rx=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>運動處方箋</h2></div>`+patientBar();
+  const d=S.data;
+  return `
+  <div class="pagehead"><h2>運動處方箋與醫囑禁忌</h2><p>把「六週內禁止負重深蹲」這類關鍵指示寫成結構化的 <span class="mono">ServiceRequest</span>，治療師端會強制顯示紅色警示。</p></div>
+  ${patientBar()}
+  ${(d.Condition||[]).length?'':'<div class="alert amber"><span class="ic">⚠️</span><div>尚未登錄 <b>Condition</b>，處方箋將無法連結診斷依據。建議先完成「門診診斷登錄」。</div></div>'}
+
+  <div class="card"><div class="ch"><h3>開立處方箋</h3><span class="sub">POST /ServiceRequest</span></div><div class="cb">
+    <div class="grid g2">
+      <div class="field"><label>連結診斷 reasonReference</label>
+        <select id="sr_cond"><option value="">（不連結）</option>
+        ${(d.Condition||[]).map(c=>`<option value="${c.id}">${esc(cc(c.code))} · ${esc(cc(c.bodySite))}</option>`).join('')}</select></div>
+      ${inputF('sr_title','處方名稱','轉介運動復健',null,true)}
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      ${inputF('sr_start','復健起始日','','date',false,'',today())}
+      ${inputF('sr_end','預計結束日','','date',false,'',new Date(Date.now()+42*864e5).toISOString().slice(0,10))}
+      ${sectionSelect('sr_pri','優先度',[['routine','常規 routine'],['urgent','緊急 urgent'],['asap','儘速 asap']])}
+    </div>
+    ${areaF('sr_dir','復健方向與強度指引 orderDetail','例：第 1-2 週以消腫止痛與被動關節活動為主；第 3-4 週漸進式主動 ROM；第 5-6 週開放式動力鏈肌力訓練，強度以疼痛 VAS ≤ 3 為上限。')}
+    ${areaF('sr_contra','禁忌事項（會以紅色警示推播給治療師）','例：六週內禁止負重深蹲；避免膝關節旋轉與剪切動作；禁止跳躍落地訓練；訓練中若出現膝關節打軟或腫脹立即停止並回診。',true)}
+    ${chips('sr_contra',['六週內禁止負重深蹲','避免膝關節旋轉與剪切動作','禁止跳躍落地與變向訓練','負重不超過體重 50%','疼痛 VAS 超過 4 立即停止'])}
+    <div class="formfoot"><button class="btn pri" onclick="createServiceRequest(this)">開立 ServiceRequest</button>
+    <span class="note">處方箋是醫院端與康復中心端的「共同語言」</span></div>
+  </div></div>
+
+  ${(d.ServiceRequest||[]).length?`<div class="card"><div class="ch"><h3>已開立處方箋</h3></div><div class="cb">
+    ${d.ServiceRequest.map(sr=>`<div style="border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px">
+      <div class="flexrow"><b>${esc(cc(sr.code))}</b><span class="tag ${sr.status==='active'?'green':''}">${esc(sr.status)}</span>
+        <span class="tag blue">${fmtD((sr.occurrencePeriod||{}).start)} → ${fmtD((sr.occurrencePeriod||{}).end)}</span>
+        <span style="margin-left:auto"><button class="btn sm ghost" onclick='showJSON(${JSON.stringify(sr).replace(/'/g,"&#39;")},"ServiceRequest")'>FHIR</button></span></div>
+      ${(sr.orderDetail||[]).length?`<div style="margin-top:8px;font-size:13.5px;white-space:pre-wrap">${esc((sr.orderDetail||[]).map(cc).join('\n'))}</div>`:''}
+      ${notes(sr)?`<div class="alert red" style="margin:10px 0 0"><span class="ic">🚫</span><div><b>禁忌事項</b><div style="white-space:pre-wrap">${esc(notes(sr))}</div></div></div>`:''}
+    </div>`).join('')}
+  </div></div>`:''}`;
+};
+async function createServiceRequest(btn){
+  if(!val('sr_contra')&&!val('sr_dir')) return toast('請至少填寫復健方向或禁忌事項','warn');
+  btnBusy(btn,true,'開立中');
+  try{
+    const res={resourceType:'ServiceRequest',status:'active',intent:'order',priority:val('sr_pri')||'routine',
+      category:[{text:'運動處方箋 / 復健轉介'}],code:{text:val('sr_title')||'轉介運動復健'},
+      subject:subjRef(),authoredOn:today(),
+      occurrencePeriod:{start:val('sr_start')||today(),end:val('sr_end')||undefined}};
+    if(lastEnc()) res.encounter=lastEnc();
+    if(val('sr_cond')) res.reasonReference=[{reference:'Condition/'+val('sr_cond')}];
+    if(val('sr_dir')) res.orderDetail=[{text:val('sr_dir')}];
+    if(val('sr_contra')) res.note=[{text:'禁忌事項：\n'+val('sr_contra')}];
+    const r=await FHIR.create(res);
+    toast('已開立 ServiceRequest/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+
+/* ============================================================
+   VIEW: 回診追蹤（醫師）
+   ============================================================ */
+VIEWS.followup=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>回診追蹤</h2></div>`+patientBar();
+  const d=S.data;
+  return `
+  <div class="pagehead"><h2>回診追蹤</h2><p>直接讀取康復中心回傳的 <span class="mono">CarePlan / Procedure / Observation</span>，看見復健趨勢再調整醫囑 — 這就是閉環的最後一哩。</p></div>
+  ${patientBar()}
+  ${(d.Observation||[]).length?'':'<div class="alert amber"><span class="ic">⚠️</span><div>康復中心尚未回傳任何量測數據。切換到「治療師」角色記錄療程後，此頁會自動出現趨勢圖。</div></div>'}
+  ${unreadCount('md')?`<div class="alert amber"><span class="ic">📨</span><div><b>康復中心治療師有 ${unreadCount('md')} 則未讀回覆。</b>
+    <div style="margin-top:7px"><button class="btn sm pri" onclick="go('inbox')">前往閱讀並回覆 →</button></div></div></div>`:''}
+  ${chartsHTML()}
+  ${mediaCard('🖼️ 影像檔案','放射師上傳，回診時可直接調閱對照')}
+  <div class="card"><div class="ch"><h3>康復中心復健計畫</h3></div><div class="cb">${carePlanHTML(true)}</div></div>
+  ${homeSummaryCard()}
+  <div class="card"><div class="ch"><h3>歷次療程紀錄 Procedure</h3><span class="sub">含康復中心療程與患者居家打卡</span></div><div class="cb tight">${procTable()}</div></div>
+  <div class="card"><div class="ch"><h3>完整資料時間軸</h3></div><div class="cb">${timelineHTML(0)}</div></div>`;
+};
+function obsGroups(){
+  const g={};
+  (S.data.Observation||[]).forEach(o=>{
+    const k=cc(o.code)||'未命名量測';
+    (g[k]=g[k]||[]).push(o);
+  });
+  return g;
+}
+function chartsHTML(){
+  const g=obsGroups(); const keys=Object.keys(g);
+  if(!keys.length) return '';
+  const colors=['#0b6fb8','#c02626','#0d9488','#6d28d9','#b45309'];
+  return `<div class="grid g2">${keys.map((k,i)=>{
+    const pts=g[k].slice().sort((a,b)=>String(resDate(a)).localeCompare(String(resDate(b))))
+      .map(o=>({y:Number((o.valueQuantity||{}).value||0),label:String(resDate(o)).slice(0,10)}));
+    const last=pts[pts.length-1],first=pts[0];
+    const delta=pts.length>1?(last.y-first.y):0;
+    const home=g[k].some(o=>(o.performer||[]).some(p=>(p.display||'').includes('患者'))||(o.category||[]).some(c=>(c.coding||[]).some(x=>x.code==='survey')));
+    return `<div class="card" style="margin:0"><div class="ch"><h3 style="font-size:14.5px">${esc(k)}</h3>
+      <div class="right"><span class="tag ${delta>0?'green':delta<0?'blue':''}">${delta>0?'▲ +':delta<0?'▼ ':'– '}${delta!==0?Math.abs(delta).toFixed(0):''}</span>
+      <span class="tag">${g[k].length} 筆</span>${home?'<span class="tag amber">含居家回報</span>':''}</div></div>
+      <div class="cb" style="padding:10px 12px 4px">${lineChart(pts,{color:colors[i%colors.length]})}</div></div>`;
+  }).join('')}</div>`;
+}
+function procTable(){
+  const list=S.data.Procedure||[];
+  if(!list.length) return emptyBox('🏋️','尚無療程紀錄','治療師於康復中心執行療程後會出現在這裡。');
+  return `<div class="scroll-x"><table><thead><tr><th>日期</th><th>療程內容</th><th>地點</th><th>執行者</th><th>備註</th><th></th></tr></thead><tbody>
+  ${list.map(p=>{const h=isHomeProc(p);
+    return `<tr><td>${fmtDT((p.performedPeriod||{}).start||p.performedDateTime)}</td>
+    <td><b>${esc(cc(p.code))}</b></td>
+    <td><span class="tag ${h?'amber':'teal'}">${h?'🏠 居家':'🏋️ 康復中心'}</span></td>
+    <td>${esc(((p.performer||[])[0]||{}).actor&&p.performer[0].actor.display||'—')}</td>
+    <td style="max-width:280px">${esc(notes(p)||'—')}</td>
+    <td><button class="btn sm ghost" onclick='showJSON(${JSON.stringify(p).replace(/'/g,"&#39;")},"Procedure")'>FHIR</button></td></tr>`}).join('')}
+  </tbody></table></div>`;
+}
+function carePlanHTML(readonly){
+  const list=clinicPlans();
+  if(!list.length) return emptyBox('🗂️','尚無復健計畫',readonly?'治療師擬定 CarePlan 後會顯示於此。':'請於下方建立。');
+  return list.map(cp=>`<div style="border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px">
+    <div class="flexrow"><b>${esc(cp.title||'復健計畫')}</b><span class="tag ${cp.status==='active'?'green':''}">${esc(cp.status)}</span>
+      <span class="tag blue">${fmtD((cp.period||{}).start)} → ${fmtD((cp.period||{}).end)}</span>
+      <span style="margin-left:auto"><button class="btn sm ghost" onclick='showJSON(${JSON.stringify(cp).replace(/'/g,"&#39;")},"CarePlan")'>FHIR</button></span></div>
+    ${cp.description?`<div style="margin-top:6px;color:var(--text-2);font-size:13.5px">${esc(cp.description)}</div>`:''}
+    <div class="tl" style="margin-top:12px">${(cp.activity||[]).map(a=>{const dt=a.detail||{};const on=dt.status==='completed'||dt.status==='in-progress';
+      return `<div class="tlitem ${on?'done':''}"><div class="knob">${dt.status==='completed'?'✓':on?'▶':'○'}</div>
+      <div class="th"><span class="tt">${esc(cc(dt.code))}</span><span class="tag ${dt.status==='completed'?'green':dt.status==='in-progress'?'teal':''}">${esc(dt.status)}</span><span class="tm">${esc(dt.scheduledString||'')}</span></div>
+      <div class="tb">${esc(dt.description||'')}</div></div>`}).join('')||'<div class="tb">（未設定階段）</div>'}</div>
+  </div>`).join('');
+}
+
+/* ============================================================
+   VIEW: 影像檢查登錄（放射師）
+   ============================================================ */
+/* ---------- 影像檔案：壓縮、暫存、上傳為 FHIR Media ---------- */
+const MAX_EDGE=1200, JPEG_Q=0.78;
+function humanSize(b){ return b>1048576?(b/1048576).toFixed(1)+' MB':(b/1024).toFixed(0)+' KB' }
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const fr=new FileReader();
+    fr.onerror=()=>reject(new Error('讀取檔案失敗'));
+    fr.onload=()=>{
+      const raw=String(fr.result);
+      let canvas;
+      try{ canvas=document.createElement('canvas') }catch(e){ canvas=null }
+      if(!canvas||!canvas.getContext||!canvas.getContext('2d')){
+        return resolve({dataUrl:raw,name:file.name,bytes:Math.round(raw.length*0.75),w:0,h:0,raw:true});
+      }
+      const img=new Image();
+      img.onerror=()=>resolve({dataUrl:raw,name:file.name,bytes:Math.round(raw.length*0.75),w:0,h:0,raw:true});
+      img.onload=()=>{
+        let {width:w,height:h}=img;
+        const sc=Math.min(1,MAX_EDGE/Math.max(w,h));
+        w=Math.round(w*sc); h=Math.round(h*sc);
+        canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.fillStyle='#000'; ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img,0,0,w,h);
+        let out; try{ out=canvas.toDataURL('image/jpeg',JPEG_Q) }catch(e){ out=raw }
+        resolve({dataUrl:out,name:file.name,bytes:Math.round(out.length*0.75),w,h});
+      };
+      img.src=raw;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+function addPending(o){ S.pendingImgs.push(o); paintPending(); }
+function removePending(i){ S.pendingImgs.splice(i,1); paintPending(); }
+function paintPending(){
+  const box=document.getElementById('pendBox'); if(!box)return;
+  const n=S.pendingImgs.length;
+  box.innerHTML=n?`<div class="sechead" style="margin:14px 0 8px">待上傳影像（${n} 張，共 ${humanSize(S.pendingImgs.reduce((a,x)=>a+x.bytes,0))}）</div>
+    <div class="thumbs">${S.pendingImgs.map((p,i)=>`<div class="thumb">
+      <button class="x" title="移除" onclick="removePending(${i})">✕</button>
+      <img src="${p.dataUrl}" alt="">
+      <div class="sz">${p.w?p.w+'×'+p.h+' · ':''}${humanSize(p.bytes)}</div></div>`).join('')}</div>`:'';
+}
+async function onPickFiles(input,btnId){
+  const files=[...(input.files||[])]; if(!files.length)return;
+  const box=document.getElementById('pendBox');
+  if(box) box.innerHTML='<div class="loading"><span class="spin" style="border-color:#ccc;border-top-color:#0b6fb8"></span> 正在壓縮影像…</div>';
+  for(const f of files){
+    if(!/^image\//.test(f.type)){ toast('略過非影像檔：'+f.name,'warn'); continue }
+    try{ addPending(await compressImage(f)) }catch(e){ toast(f.name+'：'+e.message,'err') }
+  }
+  paintPending(); input.value='';
+  if(S.pendingImgs.length) toast('已加入 '+S.pendingImgs.length+' 張影像，按下方按鈕上傳','ok');
+}
+function dropZone(){
+  return `<div class="drop" onclick="document.getElementById('imgInput').click()"
+      ondragover="event.preventDefault();this.classList.add('over')"
+      ondragleave="this.classList.remove('over')"
+      ondrop="event.preventDefault();this.classList.remove('over');onDropFiles(event)">
+      <span class="ic">🖼️</span>
+      <div class="t">點此選擇 X 光 / MRI 影像檔，或直接把圖片拖進來</div>
+      <div class="s">支援 JPG / PNG，可多選。上傳前會自動縮至最長邊 ${MAX_EDGE}px 的 JPEG，以 base64 寫入 FHIR <span class="mono">Media</span> 資源</div>
+    </div>
+    <input type="file" id="imgInput" accept="image/*" multiple style="display:none" onchange="onPickFiles(this)">
+    <div id="pendBox"></div>`;
+}
+function onDropFiles(ev){
+  const dt=ev.dataTransfer; if(!dt)return;
+  const inp=document.getElementById('imgInput');
+  try{ inp.files=dt.files; onPickFiles(inp) }
+  catch(e){ onPickFiles({files:[...dt.files],value:''}) }
+}
+/* 建立 Media 資源（一張影像一筆），連結到 ImagingStudy */
+async function uploadMedia(studyId,meta){
+  const made=[];
+  for(let i=0;i<S.pendingImgs.length;i++){
+    const p=S.pendingImgs[i];
+    const comma=p.dataUrl.indexOf(',');
+    const b64=p.dataUrl.slice(comma+1);
+    const ctype=(p.dataUrl.slice(5,comma).split(';')[0])||'image/jpeg';
+    const res={resourceType:'Media',status:'completed',
+      type:{coding:[{system:'http://terminology.hl7.org/CodeSystem/media-type',code:'image',display:'Image'}],text:'醫學影像'},
+      modality:{coding:[{system:'http://dicom.nema.org/resources/ontology/DCM',code:(meta.mod||'CR')}],text:meta.modText||''},
+      subject:subjRef(),createdDateTime:meta.when||new Date().toISOString(),
+      operator:{display:meta.by||'放射師'},
+      content:{contentType:ctype,data:b64,title:(meta.title||'醫學影像')+(S.pendingImgs.length>1?(' #'+(i+1)):''),
+        creation:meta.when||new Date().toISOString()}};
+    if(p.w){ res.width=p.w; res.height=p.h }
+    if(meta.site) res.bodySite={text:meta.site};
+    if(studyId) res.partOf=[{reference:'ImagingStudy/'+studyId}];
+    if(meta.note) res.note=[{text:meta.note}];
+    made.push(await FHIR.create(res));
+  }
+  S.pendingImgs=[];
+  return made;
+}
+/* 影像縮圖牆 + 燈箱 */
+function mediaSrc(m){ const c=(m||{}).content||{}; return c.data?('data:'+(c.contentType||'image/jpeg')+';base64,'+c.data):(c.url||'') }
+function mediaGallery(list){
+  list=list||[];
+  if(!list.length) return emptyBox('🖼️','尚無影像檔','放射師於「影像檢查登錄」上傳 X 光／MRI 後，醫師、治療師與患者三方都會即時看到。');
+  return `<div class="gal">${list.map(m=>`<div class="it" onclick="openImage('${m.id}')">
+    <div class="bd">${esc(((m.modality||{}).coding||[])[0]&&m.modality.coding[0].code||'IMG')}</div>
+    <img src="${mediaSrc(m)}" alt="${esc((m.content||{}).title||'醫學影像')}" loading="lazy">
+    <div class="cap"><div class="t">${esc((m.content||{}).title||'醫學影像')}</div>
+      <div class="d">${fmtD(m.createdDateTime)} · ${esc((m.operator||{}).display||'')}</div></div>
+  </div>`).join('')}</div>`;
+}
+function mediaCard(title,sub){
+  const list=S.data.Media||[];
+  return `<div class="card"><div class="ch"><h3>${title||'🖼️ 影像檔案'}</h3>
+    <span class="sub">${sub||'FHIR Media · 由放射師上傳'}</span>
+    <div class="right"><span class="tag ${list.length?'purple':''}">${list.length} 張</span></div></div>
+    <div class="cb">${mediaGallery(list)}</div></div>`;
+}
+function openImage(id){
+  const m=(S.data.Media||[]).find(x=>x.id===id); if(!m)return;
+  const study=(S.data.ImagingStudy||[]).find(s=>((m.partOf||[])[0]||{}).reference==='ImagingStudy/'+s.id);
+  openModal((m.content||{}).title||'醫學影像',
+    `<div class="lightbox"><img src="${mediaSrc(m)}" alt=""></div>
+     <div class="kv" style="margin-top:14px">
+       <div class="k">拍攝時間</div><div>${fmtDT(m.createdDateTime)}</div>
+       <div class="k">儀器 modality</div><div>${esc(((m.modality||{}).coding||[])[0]&&m.modality.coding[0].code||'—')} ${esc((m.modality||{}).text||'')}</div>
+       <div class="k">部位</div><div>${esc((m.bodySite||{}).text||'—')}</div>
+       <div class="k">上傳者</div><div>${esc((m.operator||{}).display||'—')}</div>
+       <div class="k">所屬檢查</div><div>${study?esc(study.description||'')+' <span class="mono">ImagingStudy/'+esc(study.id)+'</span>':'—'}</div>
+       <div class="k">影像尺寸</div><div>${m.width?m.width+' × '+m.height+' px':'—'}</div>
+       <div class="k">FHIR 位置</div><div class="mono">Media/${esc(m.id)}</div>
+       ${notes(m)?`<div class="k">備註</div><div style="white-space:pre-wrap">${esc(notes(m))}</div>`:''}
+     </div>`,
+    `<button class="btn" onclick='showJSON(mediaMeta("${m.id}"),"Media（已略過 base64 內容）")'>檢視 FHIR</button>
+     <button class="btn pri" onclick="closeModal()">關閉</button>`);
+}
+function mediaMeta(id){
+  const m=(S.data.Media||[]).find(x=>x.id===id); if(!m)return{};
+  const c=JSON.parse(JSON.stringify(m));
+  if(c.content&&c.content.data) c.content.data='«base64 影像資料 '+Math.round(c.content.data.length/1024)+' KB，已略過»';
+  return c;
+}
+
+VIEWS.imaging=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>影像檢查登錄</h2></div>`+patientBar();
+  const d=S.data;
+  return `
+  <div class="pagehead"><h2>影像檢查登錄</h2><p>登錄 X 光／MRI 檢查（<span class="mono">ImagingStudy</span>）並上傳影像檔（<span class="mono">Media</span>）— 上傳後醫師、治療師與患者三方都看得到。</p></div>
+  ${patientBar()}
+  <div class="card"><div class="ch"><h3>登錄檢查並上傳影像</h3><span class="sub">POST /ImagingStudy + POST /Media</span></div><div class="cb">
+    <div class="field"><label>影像歸屬</label>
+      <select id="is_target" onchange="toggleStudyFields()">
+        <option value="">＋ 建立一筆新的影像檢查</option>
+        ${(d.ImagingStudy||[]).map(i=>`<option value="${i.id}">附加到既有檢查：${esc(i.description||'影像檢查')} · ${fmtD(i.started)}</option>`).join('')}
+      </select>
+      <div class="hint">選「建立新檢查」會同時產生 ImagingStudy 與 Media；選既有檢查則只新增 Media 並掛在該檢查底下</div></div>
+
+    <div id="studyFields">
+      <div class="grid g3" style="margin-top:14px">
+        ${sectionSelect('is_mod','檢查儀器 modality',[['CR','CR — X 光（電腦放射）'],['DX','DX — 數位 X 光'],['MR','MR — 磁振造影 MRI'],['CT','CT — 電腦斷層'],['US','US — 超音波']])}
+        ${inputF('is_desc','檢查描述','左膝 X 光 正面／側面',null,true)}
+        ${inputF('is_started','檢查時間','','datetime-local',false,'',nowLocal())}
+      </div>
+      <div class="grid g3" style="margin-top:14px">
+        ${inputF('is_site','拍攝部位','左膝',null,false,'',(cc(((S.data.Condition||[])[0]||{}).bodySite)||'').replace(/\s*\(.*\)$/,''))}
+        ${inputF('is_by','檢查人員','張技術師',null,false,'','張技術師')}
+        ${inputF('is_pacs','PACS / DICOM 連結','pacs://hospital/study/1.2.840.113619.2',null,false,'實務上為 DICOM Study Instance UID 或 WADO-RS 位址')}
+      </div>
+      ${areaF('is_note','檢查技術備註','例：受檢者左膝屈曲 15°，正面／側面各一張，kVp 60 / mAs 5。')}
+    </div>
+
+    <div class="sechead">影像檔上傳</div>
+    ${dropZone()}
+    <div class="formfoot"><button class="btn pri" onclick="createImaging(this)">送出（建立檢查並上傳影像）</button>
+      <span class="note">影像以 base64 寫入 FHIR Media，換一台電腦登入也看得到</span></div>
+  </div></div>
+
+  ${mediaCard('🖼️ 本患者已上傳的影像','點縮圖可放大檢視')}
+
+  ${(d.ImagingStudy||[]).length?`<div class="card"><div class="ch"><h3>本患者影像檢查紀錄</h3></div><div class="cb tight">
+    <div class="scroll-x"><table><thead><tr><th>檢查時間</th><th>儀器</th><th>描述</th><th>影像張數</th><th>備註</th><th></th></tr></thead><tbody>
+    ${d.ImagingStudy.map(i=>{const n=(d.Media||[]).filter(m=>((m.partOf||[])[0]||{}).reference==='ImagingStudy/'+i.id).length;
+      return `<tr><td>${fmtDT(i.started)}</td><td><span class="tag purple">${esc(((i.modality||[])[0]||{}).code||'—')}</span></td>
+      <td><b>${esc(i.description||'—')}</b></td><td>${n?`<span class="tag green">${n} 張已上傳</span>`:'<span class="tag">未上傳影像</span>'}</td>
+      <td class="mono" style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${esc(notes(i)||'—')}</td>
+      <td><button class="btn sm ghost" onclick='showJSON(${JSON.stringify(i).replace(/'/g,"&#39;")},"ImagingStudy")'>FHIR</button></td></tr>`}).join('')}
+    </tbody></table></div></div></div>`:''}`;
+};
+function toggleStudyFields(){
+  const t=val('is_target'), box=document.getElementById('studyFields');
+  if(box) box.classList.toggle('hide',!!t);
+  const btn=document.querySelector('#main .btn.pri[onclick^="createImaging"]');
+  if(btn) btn.textContent=t?'上傳影像到選定的檢查':'送出（建立檢查並上傳影像）';
+}
+async function createImaging(btn){
+  const target=val('is_target');
+  if(!target&&!val('is_desc')) return toast('請填寫檢查描述','warn');
+  if(target&&!S.pendingImgs.length) return toast('請先選擇要上傳的影像檔','warn');
+  btnBusy(btn,true,'上傳中');
+  try{
+    let studyId=target, study=null;
+    if(!target){
+      const when=new Date(val('is_started')||Date.now()).toISOString();
+      const res={resourceType:'ImagingStudy',status:'available',subject:subjRef(),started:when,
+        modality:[{system:'http://dicom.nema.org/resources/ontology/DCM',code:val('is_mod')||'CR'}],
+        description:val('is_desc')};
+      if(S.pendingImgs.length){ res.numberOfSeries=1; res.numberOfInstances=S.pendingImgs.length }
+      const nt=[]; if(val('is_pacs'))nt.push({text:'PACS: '+val('is_pacs')}); if(val('is_note'))nt.push({text:val('is_note')});
+      if(nt.length) res.note=nt;
+      study=await FHIR.create(res); studyId=study.id;
+    }else{
+      study=(S.data.ImagingStudy||[]).find(x=>x.id===target)||{};
+    }
+    const n=S.pendingImgs.length;
+    if(n){
+      await uploadMedia(studyId,{
+        mod:target?(((study.modality||[])[0]||{}).code||'CR'):(val('is_mod')||'CR'),
+        modText:target?(study.description||''):val('is_desc'),
+        title:target?(study.description||'醫學影像'):val('is_desc'),
+        site:val('is_site'),by:val('is_by')||'放射師',
+        when:target?(study.started||new Date().toISOString()):new Date(val('is_started')||Date.now()).toISOString(),
+        note:val('is_note')});
+    }
+    toast((target?'':'已建立 ImagingStudy/'+studyId+'　')+(n?'已上傳 '+n+' 張影像（Media）':'（未附影像檔）'),'ok');
+    await loadPatientData(); render();
+  }catch(e){
+    const big=/413|too large|entity/i.test(e.message);
+    toast('失敗：'+e.message+(big?'（影像可能過大，請減少張數或改用較小的圖）':''),'err');
+    btnBusy(btn,false);
+  }
+}
+
+/* ============================================================
+   VIEW: 授權患者清單（治療師）
+   ============================================================ */
+VIEWS.intake=function(){
+  return `
+  <div class="pagehead"><h2>授權患者清單</h2><p>康復中心只能看到<b>已由患者本人授權</b>（<span class="mono">Consent.status = active</span>）的病歷 — 授權即是資料閘門。</p></div>
+  <div class="alert blue"><span class="ic">🔐</span><div><b>隱私控管原則：</b>治療師無法自行建立或修改 Consent。若清單中查無患者，請該患者於「患者」角色的「隱私授權管理」頁授權給「${esc(CFG.center)}」。</div></div>
+  <div class="card"><div class="ch"><h3>可調閱的患者</h3><div class="right">
+    <button class="btn sm pri" onclick="loadConsented(this)">↻ 查詢授權名單</button></div></div>
+    <div class="cb tight" id="consentBox">${emptyBox('🔓','尚未查詢','點右上「查詢授權名單」，系統會搜尋所有 active 的 Consent 並反查患者。')}</div>
+  </div>`;
+};
+async function loadConsented(btn){
+  btnBusy(btn,true,'查詢中');
+  try{
+    const cs=await FHIR.search('Consent',{});
+    const active=cs.filter(c=>c.status==='active'&&(c.provision||{}).type==='permit');
+    const map={};
+    active.forEach(c=>{const ref=(c.patient||{}).reference||''; if(ref)map[ref.split('/')[1]]={consent:c,display:(c.patient||{}).display}});
+    const ids=Object.keys(map);
+    if(!ids.length){ document.getElementById('consentBox').innerHTML=emptyBox('🚫','目前沒有任何患者授權給康復中心','請患者先完成授權，或於「患者」角色 → 隱私授權管理建立 Consent。'); btnBusy(btn,false); return }
+    const all=await FHIR.search('Patient'); S.patients=all;
+    const rows=ids.map(id=>{
+      const p=all.find(x=>x.id===id)||{id,name:[{text:map[id].display||'（未知患者）'}]};
+      const c=map[id].consent;
+      return `<tr class="clk" onclick="selectPatient('${id}',this,'review')">
+        <td><b>${esc(pname(p))}</b></td><td>${esc(psport(p)||'—')}</td>
+        <td><span class="tag green">✓ ${esc(((c.provision||{}).period||{}).start?fmtD(c.provision.period.start):fmtD(c.dateTime))} 起授權</span></td>
+        <td>${esc((((c.provision||{}).period)||{}).end?fmtD(c.provision.period.end):'無期限')}</td>
+        <td class="mono">${esc(id)}</td>
+        <td><button class="btn sm pri" onclick="event.stopPropagation();selectPatient('${id}',this,'review')">調閱病歷 →</button></td></tr>`;
+    }).join('');
+    document.getElementById('consentBox').innerHTML=`<div class="scroll-x"><table><thead><tr><th>姓名</th><th>運動項目</th><th>授權狀態</th><th>授權到期</th><th>Patient ID</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    toast('共 '+ids.length+' 位患者已授權','ok');
+  }catch(e){ toast('查詢失敗：'+e.message,'err') }
+  btnBusy(btn,false);
+}
+
+/* 治療師讀取閘門 */
+function gate(){
+  if(!S.patient) return patientBar();
+  if(!consentActive()) return `<div class="alert red"><span class="ic">⛔</span><div><b>存取遭拒 — 患者未授權。</b>
+    ${esc(pname(S.patient))} 尚未建立有效的 <span class="mono">Consent</span>，依平台隱私控管規則，康復中心不得讀取其 Condition / DiagnosticReport / ServiceRequest。
+    <div style="margin-top:8px"><button class="btn sm" onclick="go('intake')">回授權患者清單</button></div></div></div>`;
+  return null;
+}
+
+/* ============================================================
+   VIEW: 診斷資訊調閱（治療師）
+   ============================================================ */
+VIEWS.review=function(){
+  const g=gate(); if(g) return `<div class="pagehead"><h2>診斷資訊調閱</h2></div>`+g;
+  const d=S.data;
+  return `
+  <div class="pagehead"><h2>診斷資訊調閱</h2><p>不必再靠患者口頭轉述 — 以下全部來自醫院端的結構化 FHIR 資源。</p></div>
+  ${patientBar('<span class="tag teal">✓ 讀取權限已驗證</span>')}
+  ${contraBanner()}
+  <div class="grid g2">
+    <div class="card" style="margin:0"><div class="ch"><h3>🦴 傷病診斷 Condition</h3></div><div class="cb">
+      ${(d.Condition||[]).length?d.Condition.map(c=>`<div class="kv" style="margin-bottom:14px">
+        <div class="k">診斷</div><div><b>${esc(cc(c.code))}</b></div>
+        <div class="k">受傷部位</div><div>${esc(cc(c.bodySite)||'—')}</div>
+        <div class="k">損傷分級</div><div><span class="tag amber">${esc(cc(c.severity)||'未分級')}</span></div>
+        <div class="k">受傷日期</div><div>${fmtD(c.onsetDateTime)}（距今 ${daysAgo(c.onsetDateTime)} 天）</div>
+        <div class="k">確認狀態</div><div>${esc(((c.verificationStatus||{}).coding||[])[0]&&c.verificationStatus.coding[0].code||'—')}</div>
+        ${notes(c)?`<div class="k">受傷機轉</div><div style="white-space:pre-wrap">${esc(notes(c))}</div>`:''}
+      </div>`).join('<div class="divider"></div>'):emptyBox('🦴','無診斷資料','')}
+    </div></div>
+    <div class="card" style="margin:0"><div class="ch"><h3>📄 診斷報告 DiagnosticReport</h3></div><div class="cb">
+      ${(d.DiagnosticReport||[]).length?d.DiagnosticReport.map(r=>`<div style="margin-bottom:12px">
+        <div class="flexrow"><b>${esc(cc(r.code))}</b><span class="tag green">${esc(r.status)}</span><span class="tag">${fmtDT(r.issued)}</span></div>
+        <div style="margin-top:5px;font-size:13.5px;line-height:1.7">${esc(r.conclusion||'')}</div></div>`).join('<div class="divider"></div>'):emptyBox('📄','無報告','')}
+    </div></div>
+  </div>
+  ${mediaCard('🖼️ 影像檔案（可放大檢視）','放射師上傳的 X 光／MRI 原圖')}
+  <div class="card"><div class="ch"><h3>🩻 影像檢查紀錄 ImagingStudy</h3></div><div class="cb tight">
+    ${(d.ImagingStudy||[]).length?`<div class="scroll-x"><table><thead><tr><th>時間</th><th>儀器</th><th>描述</th><th>影像</th><th>備註</th></tr></thead><tbody>
+    ${d.ImagingStudy.map(i=>{const n=(d.Media||[]).filter(m=>((m.partOf||[])[0]||{}).reference==='ImagingStudy/'+i.id).length;
+    return `<tr><td>${fmtDT(i.started)}</td><td><span class="tag purple">${esc(((i.modality||[])[0]||{}).code)}</span></td><td>${esc(i.description||'')}</td>
+    <td>${n?`<span class="tag green">${n} 張</span>`:'—'}</td><td class="mono">${esc(notes(i)||'—')}</td></tr>`}).join('')}</tbody></table></div>`
+    :emptyBox('🩻','無影像紀錄','')}
+  </div></div>
+  <div class="card"><div class="ch"><h3>📝 運動處方箋 ServiceRequest（醫囑）</h3></div><div class="cb">
+    ${(d.ServiceRequest||[]).length?d.ServiceRequest.map(sr=>`<div style="border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px">
+      <div class="flexrow"><b>${esc(cc(sr.code))}</b><span class="tag green">${esc(sr.status)}</span>
+      <span class="tag blue">建議療程 ${fmtD((sr.occurrencePeriod||{}).start)} → ${fmtD((sr.occurrencePeriod||{}).end)}</span></div>
+      ${(sr.orderDetail||[]).length?`<div class="sechead" style="margin:12px 0 5px">復健方向與強度指引</div><div style="white-space:pre-wrap;font-size:13.5px">${esc((sr.orderDetail||[]).map(cc).join('\n'))}</div>`:''}
+      ${notes(sr)?`<div class="alert red" style="margin:12px 0 0"><span class="ic">🚫</span><div style="white-space:pre-wrap">${esc(notes(sr))}</div></div>`:''}
+    </div>`).join(''):emptyBox('📝','醫師尚未開立處方箋','')}
+    <div class="flexrow" style="margin-top:6px"><button class="btn pri" onclick="go('careplan')">依此擬定復健計畫 →</button></div>
+  </div></div>`;
+};
+function daysAgo(d){ if(!d)return'—'; return Math.max(0,Math.round((Date.now()-new Date(d))/864e5)) }
+
+/* ============================================================
+   VIEW: 復健計畫擬定（治療師）
+   ============================================================ */
+const STAGE_PRESET=[
+  {code:'階段一：急性期 — 消腫止痛',desc:'冰敷、加壓、徒手淋巴引流、電療；股四頭肌等長收縮維持神經徵召',sch:'每週 3 次，第 1-2 週'},
+  {code:'階段二：恢復關節活動度',desc:'被動／主動輔助 ROM 訓練、髕骨鬆動術，目標膝屈曲 ROM ≥ 120°',sch:'每週 3 次，第 3-4 週'},
+  {code:'階段三：肌力重建',desc:'閉鎖鏈半蹲（0-60°）、腿推、平衡墊本體感覺訓練，漸進負荷',sch:'每週 3 次，第 5-8 週'},
+  {code:'階段四：回場專項訓練',desc:'跑步機直線慢跑 → 變向 → 跳躍落地，配合功能性測試 Hop Test',sch:'每週 3 次，第 9-12 週'},
+];
+VIEWS.careplan=function(){
+  const g=gate(); if(g) return `<div class="pagehead"><h2>復健計畫擬定</h2></div>`+g;
+  const d=S.data;
+  return `
+  <div class="pagehead"><h2>復健計畫擬定</h2><p>依醫師診斷與處方箋建立個人化 <span class="mono">CarePlan</span>，並設定階段性目標。</p></div>
+  ${patientBar()}
+  ${contraBanner()}
+  <div class="card"><div class="ch"><h3>建立復健計畫</h3><span class="sub">POST /CarePlan</span></div><div class="cb">
+    <div class="grid g2">
+      ${inputF('cp_title','計畫名稱','左膝 ACL 二級撕裂 12 週復健計畫',null,true)}
+      <div class="field"><label>依據處方箋 basedOn</label>
+        <select id="cp_sr"><option value="">（不連結）</option>
+        ${(d.ServiceRequest||[]).map(s=>`<option value="${s.id}">${esc(cc(s.code))} · ${fmtD(s.authoredOn)}</option>`).join('')}</select></div>
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="field"><label>對應診斷 addresses</label>
+        <select id="cp_cond"><option value="">（不連結）</option>
+        ${(d.Condition||[]).map(c=>`<option value="${c.id}">${esc(cc(c.code))}</option>`).join('')}</select></div>
+      ${inputF('cp_start','計畫起始','','date',false,'',today())}
+      ${inputF('cp_end','預計完成','','date',false,'',new Date(Date.now()+84*864e5).toISOString().slice(0,10))}
+    </div>
+    ${areaF('cp_desc','整體策略 description','四階段：消腫止痛 → 恢復活動度 → 肌力重建 → 回場專項訓練，每階段以客觀量測達標才進階。')}
+    <div class="sechead">階段目標（CarePlan.activity）</div>
+    <div id="stages">${STAGE_PRESET.map((s,i)=>stageRow(s,i)).join('')}</div>
+    <div class="formfoot"><button class="btn teal" onclick="createCarePlan(this)">建立 CarePlan</button>
+      <button class="btn" onclick="addStage()">＋ 新增階段</button>
+      <span class="note">階段狀態可設 not-started / in-progress / completed</span></div>
+  </div></div>
+  <div class="card"><div class="ch"><h3>目前計畫</h3></div><div class="cb">${carePlanHTML(false)}</div></div>`;
+};
+let stageSeq=0;
+function stageRow(s,i){
+  const id='st'+(stageSeq++);
+  return `<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--surface-2)" data-stage="${id}">
+    <div class="grid g3">
+      <div class="field"><label>階段名稱</label><input id="${id}_c" value="${esc(s?s.code:'')}"></div>
+      <div class="field"><label>排程</label><input id="${id}_s" value="${esc(s?s.sch:'')}" placeholder="每週 3 次，第 1-2 週"></div>
+      <div class="field"><label>狀態</label><select id="${id}_st">
+        <option value="not-started"${i===0?'':' selected'}>未開始 not-started</option>
+        <option value="in-progress"${i===0?' selected':''}>進行中 in-progress</option>
+        <option value="completed">已完成 completed</option></select></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>訓練項目說明</label><textarea id="${id}_d" style="min-height:56px">${esc(s?s.desc:'')}</textarea></div>
+    <div style="text-align:right"><button class="btn sm" onclick="this.closest('[data-stage]').remove()">移除此階段</button></div>
+  </div>`;
+}
+function addStage(){ document.getElementById('stages').insertAdjacentHTML('beforeend',stageRow(null,1)) }
+async function createCarePlan(btn){
+  if(!val('cp_title')) return toast('請填寫計畫名稱','warn');
+  btnBusy(btn,true,'建立中');
+  try{
+    const acts=[...document.querySelectorAll('[data-stage]')].map(el=>{
+      const id=el.dataset.stage;
+      const code=val(id+'_c'); if(!code) return null;
+      return {detail:{status:val(id+'_st')||'not-started',kind:'ServiceRequest',
+        code:{text:code},description:val(id+'_d'),scheduledString:val(id+'_s')}};
+    }).filter(Boolean);
+    const res={resourceType:'CarePlan',status:'active',intent:'plan',title:val('cp_title'),
+      subject:subjRef(),created:today(),
+      period:{start:val('cp_start')||today(),end:val('cp_end')||undefined},
+      description:val('cp_desc'),activity:acts};
+    if(val('cp_sr')) res.basedOn=[{reference:'ServiceRequest/'+val('cp_sr')}];
+    if(val('cp_cond')) res.addresses=[{reference:'Condition/'+val('cp_cond')}];
+    const r=await FHIR.create(res);
+    toast('已建立 CarePlan/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+
+/* ============================================================
+   VIEW: 療程與量測紀錄（治療師）
+   ============================================================ */
+const MEASURES=[
+  {k:'膝關節屈曲角度 (ROM)',unit:'deg',loinc:'41950-7',ph:'95'},
+  {k:'膝關節伸直角度 (ROM)',unit:'deg',loinc:'41950-7',ph:'-5'},
+  {k:'疼痛指數 VAS',unit:'score',loinc:'72514-3',ph:'3'},
+  {k:'股四頭肌肌力 MMT',unit:'grade',loinc:'',ph:'4'},
+  {k:'大腿圍度',unit:'cm',loinc:'',ph:'48.5'},
+  {k:'單腳跳距離 Hop Test',unit:'cm',loinc:'',ph:'120'},
+];
+VIEWS.session=function(){
+  const g=gate(); if(g) return `<div class="pagehead"><h2>療程與量測紀錄</h2></div>`+g;
+  const d=S.data;
+  return `
+  <div class="pagehead"><h2>療程與量測紀錄</h2><p>每次復健記錄為 <span class="mono">Procedure</span>，客觀數據記為 <span class="mono">Observation</span> — 這些資料會即時回流給醫師。</p></div>
+  ${patientBar()}
+  ${contraBanner()}
+  <div class="grid g2">
+    <div class="card" style="margin:0"><div class="ch"><h3>① 記錄本次療程</h3><span class="sub">POST /Procedure</span></div><div class="cb">
+      <div class="field"><label>對應復健計畫 basedOn</label><select id="pc_cp"><option value="">（不連結）</option>
+        ${(d.CarePlan||[]).map(c=>`<option value="${c.id}">${esc(c.title||'計畫')}</option>`).join('')}</select></div>
+      <div class="grid g2" style="margin-top:12px">
+        ${inputF('pc_time','療程時間','','datetime-local',false,'',nowLocal())}
+        ${inputF('pc_by','執行治療師','林怡君 物理治療師',null,false,'','林怡君 物理治療師')}
+      </div>
+      ${areaF('pc_code','本次療程內容','徒手治療（髕骨鬆動）+ 股四頭肌等長收縮 3×15 + 冰敷 15 分鐘',true)}
+      ${chips('pc_code',['徒手治療 + 股四頭肌等長收縮訓練','關節鬆動術 + 主動輔助 ROM 訓練','閉鎖鏈半蹲 + 平衡墊本體感覺訓練','跑步機慢跑 + 敏捷梯變向訓練','電療 + 冰敷 + 加壓包紮'])}
+      ${areaF('pc_note','療程反應備註','例：患者主訴訓練後輕微腫脹，已冰敷處理，下次降低負荷。')}
+      <div class="formfoot"><button class="btn teal" onclick="createProcedure(this)">建立 Procedure</button></div>
+    </div></div>
+
+    <div class="card" style="margin:0"><div class="ch"><h3>② 上傳客觀量測</h3><span class="sub">POST /Observation</span></div><div class="cb">
+      <div class="grid g2">
+        <div class="field"><label>量測項目</label><select id="ob_k" onchange="syncUnit()">
+          ${MEASURES.map((m,i)=>`<option value="${i}">${esc(m.k)}</option>`).join('')}</select></div>
+        <div class="grid g2" style="gap:10px">
+          ${inputF('ob_v','數值','95','number',true)}
+          ${inputF('ob_u','單位','deg',null,false,'','deg')}
+        </div>
+      </div>
+      <div class="grid g2" style="margin-top:12px">
+        ${inputF('ob_t','量測時間','','datetime-local',false,'',nowLocal())}
+        ${inputF('ob_site','量測部位','左膝',null,false,'',(cc(((S.data.Condition||[])[0]||{}).bodySite)||'').replace(/\s*\(.*\)$/,''))}
+      </div>
+      <div class="formfoot"><button class="btn teal" onclick="createObservation(this,'therapy','林怡君 物理治療師')">建立 Observation</button>
+        <span class="note">category = therapy（場館量測）</span></div>
+      <div class="divider"></div>
+      <div class="sechead">量測趨勢</div>
+      ${(d.Observation||[]).length?chartsHTML():emptyBox('📊','尚無量測資料','')}
+    </div></div>
+  </div>
+
+  ${homeSummaryCard()}
+  <div class="card"><div class="ch"><h3>歷次療程紀錄</h3></div><div class="cb tight">${procTable()}</div></div>
+  <div class="card"><div class="ch"><h3>全部量測數據</h3></div><div class="cb tight">${obsTable()}</div></div>
+  <div class="flexrow" style="margin-bottom:20px">
+    <button class="btn teal" onclick="go('homerx')">🏠 安排居家復健課表</button>
+    <button class="btn pri" onclick="go('feedback')">✉️ 把判斷回覆給主治醫師</button>
+  </div>`;
+};
+function syncUnit(){
+  const m=MEASURES[Number(val('ob_k'))||0];
+  setVal('ob_u',m.unit); const v=document.getElementById('ob_v'); if(v)v.placeholder=m.ph;
+}
+function obsTable(){
+  const list=S.data.Observation||[];
+  if(!list.length) return emptyBox('📊','尚無量測數據','');
+  return `<div class="scroll-x"><table><thead><tr><th>時間</th><th>項目</th><th>數值</th><th>來源</th><th>紀錄者</th><th></th></tr></thead><tbody>
+  ${list.map(o=>{const home=(o.category||[]).some(c=>(c.coding||[]).some(x=>x.code==='survey'));
+    return `<tr><td>${fmtDT(o.effectiveDateTime)}</td><td><b>${esc(cc(o.code))}</b></td>
+    <td><span class="tag blue">${esc(obsVal(o))}</span></td>
+    <td><span class="tag ${home?'amber':'teal'}">${home?'🏠 居家回報':'🏋️ 場館量測'}</span></td>
+    <td>${esc(((o.performer||[])[0]||{}).display||'—')}</td>
+    <td><button class="btn sm ghost" onclick='showJSON(${JSON.stringify(o).replace(/'/g,"&#39;")},"Observation")'>FHIR</button></td></tr>`}).join('')}
+  </tbody></table></div>`;
+}
+async function createProcedure(btn){
+  if(!val('pc_code')) return toast('請填寫療程內容','warn');
+  btnBusy(btn,true,'建立中');
+  try{
+    const st=new Date(val('pc_time')||Date.now());
+    const res={resourceType:'Procedure',status:'completed',category:{text:'物理治療 / 運動復健'},
+      code:{text:val('pc_code')},subject:subjRef(),
+      performedPeriod:{start:st.toISOString(),end:new Date(st.getTime()+36e5).toISOString()},
+      performer:[{actor:{display:val('pc_by')||'康復中心治療師'}}]};
+    if(val('pc_cp')) res.basedOn=[{reference:'CarePlan/'+val('pc_cp')}];
+    if(val('pc_note')) res.note=[{text:val('pc_note')}];
+    const r=await FHIR.create(res);
+    toast('已建立 Procedure/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+async function createObservation(btn,cat,who){
+  const v=val('ob_v'); if(v==='') return toast('請輸入數值','warn');
+  btnBusy(btn,true,'上傳中');
+  try{
+    const m=MEASURES[Number(val('ob_k'))||0]||{};
+    const code={text:m.k||'量測'};
+    if(m.loinc) code.coding=[{system:'http://loinc.org',code:m.loinc,display:m.k}];
+    const res={resourceType:'Observation',status:'final',
+      category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/observation-category',code:cat||'therapy'}],text:cat==='survey'?'居家自主回報':'場館臨床量測'}],
+      code,subject:subjRef(),
+      effectiveDateTime:new Date(val('ob_t')||Date.now()).toISOString(),
+      valueQuantity:{value:Number(v),unit:val('ob_u')||m.unit||''},
+      performer:[{display:who||'康復中心治療師'}]};
+    if(val('ob_site')) res.bodySite={text:val('ob_site')};
+    if(val('ob_note')) res.note=[{text:val('ob_note')}];
+    const r=await FHIR.create(res);
+    toast('已上傳 Observation/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+
+/* ============================================================
+   VIEW: 居家復健指派（治療師）
+   ============================================================ */
+const HOME_EX=[
+  {n:'股四頭肌等長收縮 (Quad set)',d:'仰躺膝下墊小毛巾，用力下壓毛巾繃緊大腿前側，感覺膝蓋伸直',s:'收縮 10 秒 × 10 下 × 3 組'},
+  {n:'直抬腿 (Straight Leg Raise)',d:'仰躺，膝蓋打直將整條腿抬離床面約 30 公分，停 3 秒再緩慢放下',s:'15 下 × 3 組'},
+  {n:'腳踝幫浦 (Ankle Pump)',d:'腳掌上下規律擺動，促進血液回流、減少腫脹',s:'20 下 × 3 組，每 2 小時一次'},
+  {n:'足跟滑動 (Heel Slide)',d:'仰躺，腳跟沿床面緩慢滑向臀部至微痛即停，增加膝屈曲角度',s:'15 下 × 2 組'},
+  {n:'靠牆靜蹲 (Wall Sit)',d:'背貼牆下蹲，屈膝角度不可超過 60 度，維持後緩慢站起',s:'20 秒 × 5 次'},
+  {n:'側躺髖外展',d:'側躺，上方腿伸直向上抬起約 45 度，強化臀中肌以穩定膝關節',s:'15 下 × 3 組'},
+  {n:'單腳站立平衡',d:'扶牆單腳站立，穩定後嘗試放手，訓練本體感覺',s:'30 秒 × 3 次'},
+  {n:'訓練後冰敷',d:'訓練結束後以毛巾包裹冰敷袋冰敷患部，勿直接接觸皮膚',s:'15 分鐘，每日 2 次'},
+];
+VIEWS.homerx=function(){
+  const g=gate(); if(g) return `<div class="pagehead"><h2>居家復健指派</h2></div>`+g;
+  const d=S.data, plans=homePlans(), a=adherence();
+  return `
+  <div class="pagehead"><h2>居家復健指派</h2><p>安排患者回家後的自主訓練課表（<span class="mono">CarePlan · category=home-exercise</span>）。患者 App 會出現每日課表並逐項打卡，執行狀況即時回傳給你與醫師。</p></div>
+  ${patientBar()}
+  ${contraBanner()}
+
+  ${plans.length?`<div class="grid g4" style="margin-bottom:18px">
+    <div class="stat"><div class="k">居家執行率</div><div class="v">${a.pct==null?'—':a.pct+'%'}</div><div class="d">${a.days} / ${a.expected} 天有完成紀錄</div></div>
+    <div class="stat"><div class="k">累計打卡次數</div><div class="v">${a.total}</div><div class="d">患者自主回報的動作數</div></div>
+    <div class="stat"><div class="k">課表動作數</div><div class="v">${((activeHomePlan()||{}).activity||[]).length}</div><div class="d">目前生效的居家處方</div></div>
+    <div class="stat"><div class="k">最近一次執行</div><div class="v" style="font-size:17px">${homeProcs().length?fmtD(procDate(homeProcs().slice().sort((x,y)=>String(procDate(y)).localeCompare(procDate(x)))[0])):'尚未開始'}</div><div class="d">依從性偏低時可主動聯繫</div></div>
+  </div>`:''}
+
+  <div class="card"><div class="ch"><h3>開立居家復健處方</h3><span class="sub">POST /CarePlan（category = home-exercise）</span></div><div class="cb">
+    <div class="grid g2">
+      ${inputF('hr_title','課表名稱','左膝 ACL 居家自主訓練（第 3-4 週）',null,true)}
+      <div class="field"><label>對應臨床復健計畫 basedOn</label>
+        <select id="hr_cp"><option value="">（不連結）</option>
+        ${clinicPlans().map(c=>`<option value="${c.id}">${esc(c.title||'復健計畫')}</option>`).join('')}</select></div>
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      ${inputF('hr_start','開始日期','','date',false,'',today())}
+      ${inputF('hr_end','結束日期','','date',false,'',new Date(Date.now()+14*864e5).toISOString().slice(0,10))}
+      ${sectionSelect('hr_freq','每週執行天數',[['7','每天（7 天／週）'],['5','每週 5 天'],['4','每週 4 天'],['3','每週 3 天']],'用來計算執行率的分母')}
+    </div>
+
+    <div class="sechead">選擇動作（可複選，也可自訂）</div>
+    <div id="exBox">
+      ${HOME_EX.map((e,i)=>`<label style="display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:8px;cursor:pointer;background:var(--surface-2)">
+        <input type="checkbox" id="ex${i}" ${i<4?'checked':''} style="margin-top:3px;width:16px;height:16px;accent-color:var(--teal)">
+        <span style="flex:1">
+          <span style="font-weight:700;font-size:13.5px">${esc(e.n)}</span>
+          <span class="tag teal" style="margin-left:6px">${esc(e.s)}</span>
+          <div style="font-size:12.5px;color:var(--text-2);margin-top:2px">${esc(e.d)}</div>
+        </span></label>`).join('')}
+    </div>
+    <div id="customEx"></div>
+    <button class="btn sm" onclick="addCustomEx()">＋ 新增自訂動作</button>
+
+    ${areaF('hr_note','居家注意事項（會顯示在患者手機上）','例：任何動作若引發膝關節刺痛或打軟請立即停止；訓練後腫脹加劇請冰敷並回報；六週內仍禁止負重深蹲與跳躍。',false,'',(function(){
+      const n=(S.data.ServiceRequest||[]).map(notes).filter(Boolean).join('\n');
+      return n?n+'\n若出現疼痛加劇、腫脹或膝關節打軟，請立即停止並於 App 回報。':'';
+    })())}
+    <div class="formfoot"><button class="btn teal" onclick="createHomePlan(this)">指派給患者</button>
+      <span class="note">指派後患者「居家自主回報」頁立即出現課表</span></div>
+  </div></div>
+
+  ${plans.length?`<div class="card"><div class="ch"><h3>已指派的居家課表</h3></div><div class="cb">${homePlanHTML(false)}</div></div>`:''}
+  ${homeProcs().length?`<div class="card"><div class="ch"><h3>患者居家打卡紀錄</h3><div class="right"><span class="tag amber">🏠 患者自主回報</span></div></div>
+    <div class="cb tight">${homeProcTable()}</div></div>`:''}`;
+};
+let cexSeq=0;
+function addCustomEx(){
+  const id='cex'+(cexSeq++);
+  document.getElementById('customEx').insertAdjacentHTML('beforeend',
+    `<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px" data-cex="${id}">
+      <div class="grid g2">
+        <div class="field"><label>動作名稱</label><input id="${id}_n" placeholder="例：橋式"></div>
+        <div class="field"><label>組數／次數</label><input id="${id}_s" placeholder="例：15 下 × 3 組"></div>
+      </div>
+      <div class="field" style="margin-top:10px"><label>動作說明</label><input id="${id}_d" placeholder="例：仰躺屈膝，臀部抬離床面停 3 秒"></div>
+      <div style="text-align:right;margin-top:8px"><button class="btn sm" onclick="this.closest('[data-cex]').remove()">移除</button></div>
+    </div>`);
+}
+async function createHomePlan(btn){
+  if(!val('hr_title')) return toast('請填寫課表名稱','warn');
+  const acts=[];
+  HOME_EX.forEach((e,i)=>{ const c=document.getElementById('ex'+i);
+    if(c&&c.checked) acts.push({detail:{status:'scheduled',kind:'ServiceRequest',
+      code:{text:e.n},description:e.d,scheduledString:e.s,location:{display:'居家'}}}) });
+  [...document.querySelectorAll('[data-cex]')].forEach(el=>{
+    const id=el.dataset.cex, n=val(id+'_n'); if(!n)return;
+    acts.push({detail:{status:'scheduled',kind:'ServiceRequest',code:{text:n},
+      description:val(id+'_d'),scheduledString:val(id+'_s'),location:{display:'居家'}}});
+  });
+  if(!acts.length) return toast('請至少勾選一個動作','warn');
+  btnBusy(btn,true,'指派中');
+  try{
+    const res={resourceType:'CarePlan',status:'active',intent:'plan',
+      category:[{coding:[{system:HOME_CAT_SYS,code:HOME_CAT,display:'Home exercise program'}],text:'居家復健處方'}],
+      title:val('hr_title'),subject:subjRef(),created:today(),
+      period:{start:val('hr_start')||today(),end:val('hr_end')||undefined},
+      author:{display:'林怡君 物理治療師（'+CFG.center+'）'},
+      description:val('hr_note')||'居家自主訓練課表',
+      activity:acts,
+      extension:[{url:FREQ_EXT,valueInteger:Number(val('hr_freq'))||7}]};
+    if(val('hr_cp')) res.basedOn=[{reference:'CarePlan/'+val('hr_cp')}];
+    if(val('hr_note')) res.note=[{text:val('hr_note')}];
+    const r=await FHIR.create(res);
+    toast('已指派居家課表（'+acts.length+' 個動作）CarePlan/'+r.id,'ok');
+    await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+function homePlanHTML(patientMode){
+  const list=homePlans();
+  if(!list.length) return emptyBox('🏠','尚無居家復健課表',patientMode?'治療師指派後，這裡會出現你每天要做的動作。':'於上方選擇動作後指派給患者。');
+  return list.map(cp=>{
+    const per=cp.period||{}, freq=((cp.extension||[]).find(x=>x.url===FREQ_EXT)||{}).valueInteger;
+    return `<div style="border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px">
+    <div class="flexrow"><b>${esc(cp.title||'居家課表')}</b><span class="tag ${cp.status==='active'?'green':''}">${esc(cp.status)}</span>
+      <span class="tag amber">🏠 居家</span>
+      <span class="tag blue">${fmtD(per.start)} → ${per.end?fmtD(per.end):'無期限'}${freq?'　每週 '+freq+' 天':''}</span>
+      <span style="margin-left:auto">
+        ${!patientMode&&cp.status==='active'?`<button class="btn sm" onclick="endHomePlan('${cp.id}',this)">結束此課表</button> `:''}
+        <button class="btn sm ghost" onclick='showJSON(${JSON.stringify(cp).replace(/'/g,"&#39;")},"CarePlan（居家）")'>FHIR</button></span></div>
+    ${cp.description?`<div style="margin-top:7px;font-size:13px;color:var(--text-2);white-space:pre-wrap">${esc(cp.description)}</div>`:''}
+    <div style="margin-top:12px">${(cp.activity||[]).map(a=>{const dt=a.detail||{};const name=cc(dt.code);
+      const done=patientMode&&doneToday(name);
+      return `<div style="display:flex;gap:11px;align-items:flex-start;border:1px solid ${done?'#bfe3cc':'var(--line)'};background:${done?'var(--green-l)':'var(--surface-2)'};border-radius:10px;padding:11px 13px;margin-bottom:8px">
+        <div style="flex:1">
+          <div class="flexrow"><b style="font-size:13.5px">${esc(name)}</b><span class="tag teal">${esc(dt.scheduledString||'')}</span>${done?'<span class="tag green">✓ 今日已完成</span>':''}</div>
+          <div style="font-size:12.5px;color:var(--text-2);margin-top:2px">${esc(dt.description||'')}</div>
+        </div>
+        ${patientMode?`<button class="btn sm ${done?'':'teal'}" ${done?'disabled':''} onclick="logHomeExercise('${cp.id}',${JSON.stringify(name).replace(/"/g,'&quot;')},this)">${done?'已完成':'✓ 完成'}</button>`:''}
+      </div>`}).join('')}</div>
+  </div>`}).join('');
+}
+async function endHomePlan(id,btn){
+  btnBusy(btn,true,'處理中');
+  try{
+    const cp=homePlans().find(x=>x.id===id); if(!cp) throw new Error('找不到課表');
+    const copy=JSON.parse(JSON.stringify(cp)); copy.status='completed';
+    await FHIR.update(copy); toast('課表已結束','ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+async function logHomeExercise(planId,name,btn){
+  btnBusy(btn,true,'紀錄中');
+  try{
+    const res={resourceType:'Procedure',status:'completed',
+      category:{text:HOME_PROC_TEXT},code:{text:name},subject:subjRef(),
+      performedDateTime:new Date().toISOString(),
+      basedOn:[{reference:'CarePlan/'+planId}],
+      location:{display:'居家'},
+      performer:[{actor:{display:'患者本人（居家）'}}]};
+    await FHIR.create(res);
+    toast('已完成「'+name+'」，治療師與醫師都看得到 👍','ok');
+    await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+function homeProcTable(){
+  const list=homeProcs().slice().sort((a,b)=>String(resDate(b)).localeCompare(String(resDate(a))));
+  if(!list.length) return emptyBox('🏠','患者尚未打卡','');
+  return `<div class="scroll-x"><table><thead><tr><th>完成時間</th><th>動作</th><th>地點</th><th>回報者</th><th></th></tr></thead><tbody>
+  ${list.map(p=>`<tr><td>${fmtDT(p.performedDateTime||(p.performedPeriod||{}).start)}</td>
+    <td><b>${esc(cc(p.code))}</b></td><td><span class="tag amber">🏠 居家</span></td>
+    <td>${esc(((p.performer||[])[0]||{}).actor&&p.performer[0].actor.display||'患者')}</td>
+    <td><button class="btn sm ghost" onclick='showJSON(${JSON.stringify(p).replace(/'/g,"&#39;")},"Procedure（居家）")'>FHIR</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+function homeSummaryCard(){
+  const plan=activeHomePlan(); if(!plan&&!homeProcs().length) return '';
+  const a=adherence();
+  return `<div class="card"><div class="ch"><h3>🏠 居家復健執行狀況</h3>
+    <span class="sub">治療師指派、患者每日回報</span>
+    <div class="right"><span class="tag ${a.pct>=70?'green':a.pct>=40?'amber':'red'}">執行率 ${a.pct==null?'—':a.pct+'%'}</span>
+    <span class="tag">${a.total} 次打卡</span></div></div>
+    <div class="cb">${homePlanHTML(false).replace(/<button class="btn sm" onclick="endHomePlan[^<]*<\/button>\s*/g,'')}
+    ${a.pct!=null&&a.pct<40?`<div class="alert amber" style="margin:0"><span class="ic">⚠️</span><div><b>居家依從性偏低（${a.pct}%）。</b>建議聯繫患者了解原因，或調整課表難度與頻率。</div></div>`:''}</div></div>`;
+}
+
+/* ============================================================
+   VIEW: 回覆主治醫師（治療師）
+   ============================================================ */
+const FEEDBACK_TPL=[
+  '進度優於預期，膝屈曲已達 118°，建議可提前開放部分負重訓練。',
+  '患者訓練後仍反覆腫脹，疼痛 VAS 維持 4-5 分，建議安排提前回診評估。',
+  '肌力恢復停滯於 MMT 4 級，懷疑仍有伸展遲滯，建議考慮影像複查。',
+  '居家依從性不佳，已調整為每週 3 天課表，請醫師回診時一併衛教。',
+  '目前療程即將結束，功能性測試已達健側 85%，建議評估回場時機。',
+];
+VIEWS.feedback=function(){
+  const g=gate(); if(g) return `<div class="pagehead"><h2>回覆主治醫師</h2></div>`+g;
+  const d=S.data;
+  return `
+  <div class="pagehead"><h2>回覆主治醫師</h2><p>把復健現場的專業判斷與建議結構化回傳醫院端（<span class="mono">Communication</span>），醫師收件匣會即時出現未讀提醒 — 資訊不再只有單向流動。</p></div>
+  ${patientBar()}
+
+  <div class="card"><div class="ch"><h3>撰寫回覆</h3><span class="sub">POST /Communication</span></div><div class="cb">
+    <div class="grid g3">
+      ${inputF('fb_topic','主旨','復健進度回報與醫囑調整建議',null,true)}
+      ${sectionSelect('fb_pri','優先度',[['routine','一般 routine'],['urgent','建議儘速處理 urgent'],['asap','緊急 asap']])}
+      ${inputF('fb_by','回覆者','林怡君 物理治療師',null,false,'','林怡君 物理治療師')}
+    </div>
+    ${areaF('fb_body','專業判斷與建議','描述目前復健進展、客觀量測變化、遇到的問題，以及希望醫師配合調整的醫囑。',true)}
+    <div class="chiprow">${['進度優於預期','腫脹反覆需回診','肌力停滯建議複查','居家依從性不佳','評估回場時機']
+      .map((t,i)=>`<span class="chip" onclick="fbTemplate(${i})">${esc(t)}</span>`).join('')}</div>
+    <div style="font-size:11.5px;color:var(--text-3);margin-top:4px">（點上方標籤會帶入常用範本內容，可再自行修改）</div>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="field"><label>引用診斷 about</label><select id="fb_cond"><option value="">（不引用）</option>
+        ${(d.Condition||[]).map(c=>`<option value="Condition/${c.id}">${esc(cc(c.code))}</option>`).join('')}</select></div>
+      <div class="field"><label>引用復健計畫 about</label><select id="fb_cp"><option value="">（不引用）</option>
+        ${(d.CarePlan||[]).map(c=>`<option value="CarePlan/${c.id}">${esc(c.title||'計畫')}${isHomePlan(c)?'（居家）':''}</option>`).join('')}</select></div>
+      <div class="field"><label>引用最新量測 about</label><select id="fb_obs"><option value="">（不引用）</option>
+        ${(d.Observation||[]).slice(0,12).map(o=>`<option value="Observation/${o.id}">${esc(cc(o.code))} ${esc(obsVal(o))} · ${fmtD(resDate(o))}</option>`).join('')}</select></div>
+    </div>
+    <div class="formfoot"><button class="btn teal" onclick="sendFeedback(this)">送出給主治醫師</button>
+      <span class="note">送出後醫師側邊欄「治療師回覆」會出現未讀數字</span></div>
+  </div></div>
+
+  <div class="card"><div class="ch"><h3>對話紀錄</h3>
+    <div class="right"><span class="tag ${unreadCount('pt')?'red':''}">${unreadCount('pt')?unreadCount('pt')+' 則醫師新回覆':'無新回覆'}</span></div></div>
+    <div class="cb">${threadHTML('therapist')}</div></div>`;
+};
+function fbTemplate(i){ setVal('fb_body',FEEDBACK_TPL[i]||'') }
+async function sendFeedback(btn){
+  if(!val('fb_body')) return toast('請填寫判斷與建議內容','warn');
+  btnBusy(btn,true,'送出中');
+  try{
+    const about=[val('fb_cond'),val('fb_cp'),val('fb_obs')].filter(Boolean).map(r=>({reference:r}));
+    const res={resourceType:'Communication',status:'completed',priority:val('fb_pri')||'routine',
+      category:[{coding:[{system:COMM_SYS,code:PT2MD,display:'Therapist to physician'}],text:'康復中心 → 主治醫師'}],
+      subject:subjRef(),
+      topic:{text:val('fb_topic')||'復健進度回報'},
+      sent:new Date().toISOString(),
+      sender:{display:(val('fb_by')||'康復中心治療師')+'（'+CFG.center+'）'},
+      recipient:[{display:'主治醫師（骨科／復健科）'}],
+      payload:[{contentString:val('fb_body')}]};
+    if(about.length) res.about=about;
+    const r=await FHIR.create(res);
+    toast('已送出回覆 Communication/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+function threadHTML(who){
+  const list=comms();
+  if(!list.length) return emptyBox('✉️','尚無往來訊息',who==='therapist'?'撰寫上方表單即可將判斷回傳醫師。':'治療師回覆後會出現在這裡。');
+  return list.map(c=>{
+    const dir=commDir(c), mine=(who==='therapist'&&dir===PT2MD)||(who==='physician'&&dir===MD2PT);
+    const unread=!c.received && ((who==='physician'&&dir===PT2MD)||(who==='therapist'&&dir===MD2PT));
+    const col=dir===PT2MD?'var(--teal-l)':'var(--primary-l)';
+    const bd=dir===PT2MD?'#b7e5df':'#bcdcf2';
+    return `<div style="display:flex;justify-content:${mine?'flex-end':'flex-start'};margin-bottom:12px">
+      <div style="max-width:78%;background:${col};border:1px solid ${bd};border-radius:12px;padding:12px 14px">
+        <div class="flexrow" style="margin-bottom:5px">
+          <span class="tag ${dir===PT2MD?'teal':'blue'}">${dir===PT2MD?'🏋️ 治療師 → 醫師':'🩺 醫師 → 治療師'}</span>
+          ${c.priority&&c.priority!=='routine'?`<span class="tag red">${esc(c.priority)}</span>`:''}
+          ${unread?'<span class="tag red">● 未讀</span>':c.received?`<span class="tag green">✓ 已讀 ${fmtDT(c.received)}</span>`:'<span class="tag">已送出</span>'}
+          <span class="tm" style="font-size:11.5px;color:var(--text-3);margin-left:auto">${fmtDT(c.sent)}</span>
+        </div>
+        <div style="font-weight:800;font-size:13.5px">${esc((c.topic||{}).text||'（無主旨）')}</div>
+        <div style="font-size:13.5px;white-space:pre-wrap;margin-top:3px">${esc(commText(c))}</div>
+        <div style="font-size:11.5px;color:var(--text-3);margin-top:6px">
+          ${esc((c.sender||{}).display||'')}${(c.about||[]).length?'　·　引用：'+esc(c.about.map(a=>a.reference).join('、')):''}
+          ${(c.inResponseTo||[]).length?'　·　回覆自 '+esc(c.inResponseTo[0].reference):''}
+        </div>
+        <div style="margin-top:8px;display:flex;gap:7px">
+          ${unread?`<button class="btn sm pri" onclick="markRead('${c.id}',this)">標記為已讀</button>`:''}
+          ${who==='physician'&&dir===PT2MD?`<button class="btn sm" onclick="replyTo('${c.id}')">回覆治療師</button>`:''}
+          <button class="btn sm ghost" onclick='showJSON(${JSON.stringify(c).replace(/'/g,"&#39;")},"Communication")'>FHIR</button>
+        </div>
+      </div></div>`;
+  }).join('');
+}
+async function markRead(id,btn){
+  btnBusy(btn,true,'處理中');
+  try{
+    const c=(S.data.Communication||[]).find(x=>x.id===id); if(!c) throw new Error('找不到訊息');
+    const copy=JSON.parse(JSON.stringify(c)); copy.received=new Date().toISOString();
+    await FHIR.update(copy); toast('已標記為已讀','ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+function replyTo(id){
+  const c=(S.data.Communication||[]).find(x=>x.id===id); if(!c)return;
+  openModal('回覆治療師',
+    `<div class="alert blue"><span class="ic">✉️</span><div><b>${esc((c.topic||{}).text||'')}</b>
+      <div style="white-space:pre-wrap;margin-top:3px">${esc(commText(c))}</div>
+      <div style="font-size:11.5px;color:var(--text-3);margin-top:5px">${esc((c.sender||{}).display||'')} · ${fmtDT(c.sent)}</div></div>
+     <div class="field"><label>醫囑回覆 / 指示 <span class="req">*</span></label>
+       <textarea id="rp_body" style="min-height:110px" placeholder="例：同意提前開放部分負重，上限為體重 50%；仍維持禁止跳躍落地，兩週後回診複評。"></textarea></div>
+     <div class="chiprow">
+       ${['同意依建議調整訓練強度','請維持原醫囑，兩週後回診複評','已安排下週提前回診','請先安排 MRI 複查再進階'].map(t=>
+         `<span class="chip" onclick="setVal('rp_body',${JSON.stringify(t).replace(/"/g,'&quot;')})">${esc(t)}</span>`).join('')}
+     </div>
+     <div class="field" style="margin-top:12px"><label>回覆者</label><input id="rp_by" value="陳建志 醫師"></div>`,
+    `<button class="btn" onclick="closeModal()">取消</button>
+     <button class="btn pri" onclick="sendReply('${id}',this)">送出回覆</button>`);
+}
+async function sendReply(id,btn){
+  if(!val('rp_body')) return toast('請填寫回覆內容','warn');
+  btnBusy(btn,true,'送出中');
+  try{
+    const src=(S.data.Communication||[]).find(x=>x.id===id)||{};
+    const res={resourceType:'Communication',status:'completed',priority:'routine',
+      category:[{coding:[{system:COMM_SYS,code:MD2PT,display:'Physician to therapist'}],text:'主治醫師 → 康復中心'}],
+      subject:subjRef(),
+      topic:{text:'Re: '+(((src.topic||{}).text)||'復健進度回報')},
+      sent:new Date().toISOString(),
+      sender:{display:(val('rp_by')||'主治醫師')+'（骨科／復健科）'},
+      recipient:[{display:(src.sender||{}).display||'康復中心治療師'}],
+      inResponseTo:[{reference:'Communication/'+id}],
+      payload:[{contentString:val('rp_body')}]};
+    await FHIR.create(res);
+    // 同時把原訊息標記為已讀
+    const copy=JSON.parse(JSON.stringify(src)); if(!copy.received){copy.received=new Date().toISOString(); await FHIR.update(copy)}
+    closeModal(); toast('已回覆治療師','ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+
+/* ============================================================
+   VIEW: 治療師回覆收件匣（醫師）
+   ============================================================ */
+VIEWS.inbox=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>治療師回覆</h2></div>`+patientBar();
+  const un=unreadCount('md'), list=comms();
+  return `
+  <div class="pagehead"><h2>治療師回覆收件匣</h2><p>康復中心治療師針對此患者的專業判斷與建議（<span class="mono">Communication</span>），你可以直接回覆形成雙向對話。</p></div>
+  ${patientBar()}
+  ${un?`<div class="alert amber"><span class="ic">📨</span><div><b>你有 ${un} 則未讀回覆。</b>閱讀後點「標記為已讀」或直接回覆，治療師端會看到你的指示。</div></div>`
+      :list.length?'<div class="alert green"><span class="ic">✓</span><div>所有治療師回覆都已閱讀。</div></div>':''}
+  ${homeSummaryCard()}
+  <div class="card"><div class="ch"><h3>對話紀錄（${list.length} 則）</h3></div><div class="cb">${threadHTML('physician')}</div></div>`;
+};
+
+/* ============================================================
+   VIEW: 患者角色
+   ============================================================ */
+VIEWS.me=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>我的基本資料</h2><p>請先選擇你的身分（示範用：由清單挑選一位患者）。</p></div>`+pickSelfHTML();
+  const p=S.patient;
+  return `
+  <div class="pagehead"><h2>我的基本資料</h2><p>你可以自行維護聯絡方式與運動項目（FHIR <span class="mono">Patient</span> — 患者具 R/U 權限）。</p></div>
+  ${patientBar()}
+  <div class="card"><div class="ch"><h3>編輯我的資料</h3><span class="sub">PUT /Patient/${esc(p.id)}</span></div><div class="cb">
+    <div class="grid g3">
+      ${inputF('me_name','姓名','',null,true,'',pname(p))}
+      ${inputF('me_birth','出生日期','','date',false,'',p.birthDate||'')}
+      ${sectionSelect('me_gender','生理性別',[['male','男'],['female','女'],['other','其他'],['unknown','未知']])}
+      ${inputF('me_phone','聯絡電話','',null,false,'',((p.telecom||[])[0]||{}).value||'')}
+      ${inputF('me_sport','從事運動項目','',null,false,'',psport(p))}
+      ${inputF('me_mrn','病歷號','',null,false,'唯讀',pmrn(p))}
+    </div>
+    ${chips('me_sport',['籃球','棒球','足球','排球','田徑','羽球','舉重','自行車','游泳','網球'])}
+    <div class="formfoot"><button class="btn pri" onclick="updateSelf(this)">儲存變更</button>
+      <span class="note">患者對 Patient 具 Read / Update 權限，但無法修改任何診斷資料</span></div>
+  </div></div>
+  ${pickSelfHTML()}`;
+};
+function pickSelfHTML(){
+  return `<div class="card"><div class="ch"><h3>切換示範身分</h3><div class="right">
+    <button class="btn sm pri" onclick="doSearchPatients(this,true)">↻ 載入患者清單</button></div></div>
+    <div class="cb tight" id="rosterBox">${rosterTable()}</div></div>`;
+}
+async function updateSelf(btn){
+  btnBusy(btn,true,'儲存中');
+  try{
+    const p=JSON.parse(JSON.stringify(S.patient));
+    const nm=val('me_name'); p.name=[{use:'official',text:nm,family:nm.slice(0,1),given:[nm.slice(1)||nm]}];
+    if(val('me_birth'))p.birthDate=val('me_birth');
+    p.gender=val('me_gender');
+    p.telecom=val('me_phone')?[{system:'phone',value:val('me_phone'),use:'mobile'}]:undefined;
+    p.extension=val('me_sport')?[{url:SPORT_EXT,valueString:val('me_sport')}]:undefined;
+    const r=await FHIR.update(p);
+    S.patient=r; const i=S.patients.findIndex(x=>x.id===r.id); if(i>=0)S.patients[i]=r;
+    toast('資料已更新','ok'); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+
+VIEWS.record=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>我的完整病歷</h2></div>`+pickSelfHTML();
+  return `
+  <div class="pagehead"><h2>我的完整病歷</h2><p>醫院診斷、影像、處方箋、復健計畫與每一次量測，全都看得到。</p></div>
+  ${patientBar()}
+  ${contraBanner()}
+  ${chartsHTML()}
+  ${mediaCard('🖼️ 我的影像檢查','醫院放射師上傳的 X 光／MRI，你隨時都能看')}
+  <div class="card"><div class="ch"><h3>復健計畫進度</h3></div><div class="cb">${carePlanHTML(true)}</div></div>
+  ${homePlans().length?`<div class="card"><div class="ch"><h3>🏠 居家復健課表</h3>
+    <div class="right"><span class="tag amber">執行率 ${adherence().pct==null?'—':adherence().pct+'%'}</span>
+    <button class="btn sm teal" onclick="go('homelog')">前往打卡</button></div></div>
+    <div class="cb">${homePlanHTML(false)}</div></div>`:''}
+  <div class="card"><div class="ch"><h3>完整時間軸</h3></div><div class="cb">${timelineHTML(0)}</div></div>`;
+};
+
+VIEWS.consent=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>隱私授權管理</h2></div>`+pickSelfHTML();
+  const list=S.data.Consent||[];
+  const act=consentActive();
+  return `
+  <div class="pagehead"><h2>隱私授權管理</h2><p>只有你本人能開啟或撤銷康復中心對病歷的調閱權（FHIR <span class="mono">Consent</span>，患者具 C/R/A 權限）。</p></div>
+  ${patientBar()}
+  <div class="alert ${act?'green':'amber'}"><span class="ic">${act?'🔓':'🔒'}</span><div>
+    <b>目前狀態：${act?'已授權 — 康復中心可讀取你的診斷資料':'未授權 — 康復中心看不到你的任何病歷'}</b>
+    <div style="margin-top:3px">授權範圍限於：Condition（診斷）、DiagnosticReport（報告）、ImagingStudy（影像）、ServiceRequest（醫囑）。你的授權可隨時撤銷。</div></div></div>
+
+  <div class="card"><div class="ch"><h3>建立新授權</h3><span class="sub">POST /Consent</span></div><div class="cb">
+    <div class="grid g3">
+      ${inputF('cs_org','授權對象（機構）','',null,true,'',CFG.center)}
+      ${inputF('cs_start','授權起始','','date',false,'',today())}
+      ${inputF('cs_end','授權到期','','date',false,'留空代表無期限',new Date(Date.now()+180*864e5).toISOString().slice(0,10))}
+    </div>
+    <div class="formfoot"><button class="btn pri" onclick="createConsent(this)">✓ 我同意授權</button>
+      <span class="note">Consent 建立後，治療師端的「授權患者清單」立即出現你</span></div>
+  </div></div>
+
+  <div class="card"><div class="ch"><h3>授權紀錄</h3></div><div class="cb tight">
+    ${list.length?`<div class="scroll-x"><table><thead><tr><th>狀態</th><th>授權對象</th><th>期間</th><th>建立時間</th><th></th></tr></thead><tbody>
+    ${list.map(c=>`<tr><td><span class="tag ${c.status==='active'?'green':'red'}">${c.status==='active'?'✓ 有效':'✕ 已撤銷'}</span></td>
+      <td>${esc(((c.organization||[])[0]||{}).display||'—')}</td>
+      <td>${fmtD(((c.provision||{}).period||{}).start)} → ${((c.provision||{}).period||{}).end?fmtD(c.provision.period.end):'無期限'}</td>
+      <td>${fmtDT(c.dateTime)}</td>
+      <td class="flexrow">${c.status==='active'?`<button class="btn sm danger" onclick="revokeConsent('${c.id}',this)">撤銷授權</button>`:''}
+      <button class="btn sm ghost" onclick='showJSON(${JSON.stringify(c).replace(/'/g,"&#39;")},"Consent")'>FHIR</button></td></tr>`).join('')}
+    </tbody></table></div>`:emptyBox('🔐','尚無授權紀錄','建立授權後，康復中心才能讀取你的診斷資料。')}
+  </div></div>`;
+};
+async function createConsent(btn){
+  btnBusy(btn,true,'建立中');
+  try{
+    const res={resourceType:'Consent',status:'active',
+      scope:{coding:[{system:'http://terminology.hl7.org/CodeSystem/consentscope',code:'patient-privacy'}],text:'病歷調閱授權'},
+      category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/v3-ActCode',code:'IDSCL',display:'information disclosure'}]}],
+      patient:{reference:'Patient/'+S.patient.id,display:pname(S.patient)},
+      dateTime:new Date().toISOString(),
+      organization:[{display:val('cs_org')||CFG.center}],
+      provision:{type:'permit',
+        period:{start:val('cs_start')||today(),end:val('cs_end')||undefined},
+        actor:[{role:{text:'康復中心治療師'},reference:{display:val('cs_org')||CFG.center}}],
+        action:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/consentaction',code:'access',display:'Access'}]}],
+        class:[{system:'http://hl7.org/fhir/resource-types',code:'Condition'},
+               {system:'http://hl7.org/fhir/resource-types',code:'DiagnosticReport'},
+               {system:'http://hl7.org/fhir/resource-types',code:'ImagingStudy'},
+               {system:'http://hl7.org/fhir/resource-types',code:'ServiceRequest'}]}};
+    const r=await FHIR.create(res);
+    toast('已授權，Consent/'+r.id,'ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+async function revokeConsent(id,btn){
+  btnBusy(btn,true,'撤銷中');
+  try{
+    const c=(S.data.Consent||[]).find(x=>x.id===id); if(!c) throw new Error('找不到該筆授權');
+    const copy=JSON.parse(JSON.stringify(c)); copy.status='inactive'; copy.provision=copy.provision||{}; copy.provision.type='deny';
+    await FHIR.update(copy);
+    toast('已撤銷授權，治療師立即失去讀取權','ok'); await loadPatientData(); render();
+  }catch(e){ toast('失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+
+VIEWS.homelog=function(){
+  if(!S.patient) return `<div class="pagehead"><h2>居家自主回報</h2></div>`+pickSelfHTML();
+  const home=(S.data.Observation||[]).filter(o=>(o.category||[]).some(c=>(c.coding||[]).some(x=>x.code==='survey')));
+  return `
+  <div class="pagehead"><h2>居家自主訓練與回報</h2><p>治療師指派的每日課表在這裡打卡，再回報疼痛與活動度 — 治療師與醫師都能即時看到。</p></div>
+  ${patientBar()}
+  ${contraBanner()}
+
+  ${homePlans().length?`<div class="card"><div class="ch"><h3>🏠 今日居家課表</h3>
+    <span class="sub">治療師 ${esc((activeHomePlan()||{}).author&&activeHomePlan().author.display||'')} 指派</span>
+    <div class="right"><span class="tag ${adherence().pct>=70?'green':adherence().pct>=40?'amber':'red'}">執行率 ${adherence().pct==null?'—':adherence().pct+'%'}</span></div></div>
+    <div class="cb">
+      <div class="alert blue" style="margin-bottom:14px"><span class="ic">💪</span><div>
+        做完一項就按「✓ 完成」，系統會建立一筆 FHIR <b>Procedure</b> 回傳康復中心。今天已完成 <b>${homeProcs().filter(p=>procDate(p)===today()).length}</b> 項。</div></div>
+      ${homePlanHTML(true)}
+    </div></div>`:`<div class="alert blue"><span class="ic">🏠</span><div>治療師尚未指派居家課表。完成第一次療程後，治療師會在「居家復健指派」頁替你安排每日自主訓練。</div></div>`}
+
+  <div class="card"><div class="ch"><h3>今日狀況回報</h3><span class="sub">POST /Observation</span></div><div class="cb">
+    <div class="grid g4">
+      <div class="field"><label>回報項目</label><select id="ob_k" onchange="syncUnit()">
+        ${MEASURES.map((m,i)=>`<option value="${i}"${m.k.includes('VAS')?' selected':''}>${esc(m.k)}</option>`).join('')}</select></div>
+      ${inputF('ob_v','數值','3','number',true)}
+      ${inputF('ob_u','單位','score',null,false,'','score')}
+      ${inputF('ob_t','時間','','datetime-local',false,'',nowLocal())}
+    </div>
+    ${areaF('ob_note','今日狀況描述','例：完成直抬腿 3×15 與腳踝幫浦運動，訓練後左膝略有緊繃但無腫脹，晚上走路正常。')}
+    <input type="hidden" id="ob_site" value="">
+    <div class="formfoot"><button class="btn pri" onclick="createObservation(this,'survey','患者本人（居家回報）')">送出回報</button>
+      <span class="note">患者對 Observation 具 Create / Read 權限（僅限居家數據）</span></div>
+  </div></div>
+  <div class="card"><div class="ch"><h3>我的回報趨勢</h3></div><div class="cb">${chartsHTML()||emptyBox('📊','尚無資料','')}</div></div>
+  <div class="card"><div class="ch"><h3>歷次回報（${home.length} 筆）</h3></div><div class="cb tight">${obsTable()}</div></div>
+  ${homeProcs().length?`<div class="card"><div class="ch"><h3>我的居家打卡紀錄</h3></div><div class="cb tight">${homeProcTable()}</div></div>`:''}`;
+};
+
+/* ============================================================
+   VIEW: 權限矩陣
+   ============================================================ */
+const PERM=[
+  ['Patient','基本資料','R / U','R / U','R','R','患者可維護個人聯絡資訊與運動項目；醫師可設定該個案適用的流程步驟（extension）。'],
+  ['Consent','隱私授權','C / R / A','R','—','R','僅患者本人有權授權或撤銷康復中心對其病歷的調閱權限。'],
+  ['Condition','傷病診斷','R','C / R / U','—','R（需授權）','僅門診醫師有權開立、確定與更新傷病診斷結果。'],
+  ['DiagnosticReport','診斷報告','R','C / R / U','—','R（需授權）','醫師判讀與撰寫之專業檢查報告及結論。'],
+  ['ImagingStudy','影像紀錄','R','R','C / R / U','R（需授權）','放射人員上傳 X 光、MRI 檢查紀錄與 DICOM 影像連結。'],
+  ['Media','影像檔案','R','R','C / R / U','R（需授權）','放射師上傳的 X 光／MRI 影像原圖（base64），醫師與患者皆可直接檢視放大。'],
+  ['ServiceRequest','運動處方箋','R','C / R / U','—','R（需授權）','醫師開立之運動處方箋、復健指示與禁忌事項。'],
+  ['CarePlan','復健計畫','R','R','—','C / R / U','治療師根據醫師處方擬定臨床復健計畫，以及患者回家後的居家復健處方（category = home-exercise）。'],
+  ['Procedure','治療執行','C / R（居家打卡）','R','—','C / R / U（場館）','治療師記錄場館內療程；患者依居家課表逐項打卡，自動回傳康復中心與醫師。'],
+  ['Communication','雙向訊息','—','C / R / U','—','C / R','治療師將專業判斷與建議回覆主治醫師，醫師可回覆指示形成對話串；received 欄位記錄已讀時間。'],
+  ['Observation','量測／居家數據','C / R（居家）','R','—','C / R / U（場館）','治療師記錄臨床量測；患者可回傳居家自主訓練數據與疼痛指數。'],
+  ['Encounter','就診事件','R','C / R / U','R','R','一次門診或一次復健療程的事件容器。'],
+  ['Practitioner','醫護人員','R','R','R','R','醫師與治療師的身分資訊。'],
+];
+function permCell(v){
+  if(v==='—') return '<span style="color:var(--text-3)">—</span>';
+  const strong=v.includes('C')||v.includes('A');
+  return `<span class="tag ${strong?(v.includes('A')?'purple':'green'):(v.includes('需授權')?'amber':'')}">${esc(v)}</span>`;
+}
+VIEWS.perm=function(){
+  return `
+  <div class="pagehead"><h2>角色權限矩陣</h2><p>C 建立 / R 讀取 / U 更新 / A 授權管控。本平台的每個表單都實際依此矩陣控管。</p></div>
+  <div class="grid g4" style="margin-bottom:18px">
+    ${Object.values(ROLES).map(r=>`<div class="stat"><div class="k">${r.en}</div><div class="v" style="font-size:18px">${r.icon} ${r.name}</div><div class="d">${r.desc}</div></div>`).join('')}
+  </div>
+  <div class="card"><div class="ch"><h3>FHIR Resource × 角色</h3><span class="sub">綠＝可建立、紫＝可授權、橘＝需患者同意</span></div><div class="cb tight">
+    <div class="scroll-x"><table><thead><tr><th>FHIR Resource</th><th>患者</th><th>醫師</th><th>放射師</th><th>治療師</th><th>權限說明與安全控管</th></tr></thead><tbody>
+    ${PERM.map(r=>`<tr><td><b class="mono" style="font-size:13px;color:var(--text)">${r[0]}</b><div style="font-size:11.5px;color:var(--text-3)">${r[1]}</div></td>
+      <td>${permCell(r[2])}</td><td>${permCell(r[3])}</td><td>${permCell(r[4])}</td><td>${permCell(r[5])}</td>
+      <td style="font-size:12.5px;color:var(--text-2)">${esc(r[6])}</td></tr>`).join('')}
+    </tbody></table></div>
+  </div></div>
+  <div class="card"><div class="ch"><h3>安全設計說明</h3></div><div class="cb">
+    <div class="alert blue"><span class="ic">🔐</span><div><b>Consent 作為讀取閘門：</b>治療師頁面在渲染前會呼叫 <span class="mono">gate()</span> 檢查該患者是否存在 status=active 且 provision.type=permit 的 Consent；不通過則整頁封鎖，僅顯示「存取遭拒」。患者撤銷後（status→inactive）閘門立即關閉。</div></div>
+    <div class="alert blue"><span class="ic">🩺</span><div><b>流程由醫師裁量：</b>八個步驟並非強制。醫師可在首頁勾選本個案適用哪些環節，設定寫入 <span class="mono">Patient.extension[flow-steps]</span>，因此換一台裝置、換一位醫師登入看到的都是同一份流程設定；被略過的步驟不計入完成度，也不會阻擋任何後續操作。</div></div>
+    <div class="alert amber"><span class="ic">🏷️</span><div><b>資料隔離：</b>所有寫入資源都會蓋上 <span class="mono">meta.tag = ${esc(TAG_SYSTEM)}|${esc(CFG.workspace)}</span>，查詢時一律加上 <span class="mono">_tag</span> 條件，因此在公開的 HAPI 測試站上也只會看到自己隊伍的資料。</div></div>
+    <div class="alert green" style="margin:0"><span class="ic">🚀</span><div><b>正式部署建議：</b>本專案的前端邏輯即為權限模型的原型；正式環境應改由後端以 SMART on FHIR + OAuth2 scope（如 <span class="mono">user/Condition.read</span>）強制執行，並以 FHIR <span class="mono">AuditEvent</span> 記錄每次調閱。</div></div>
+  </div></div>`;
+};
+
+/* ============================================================
+   VIEW: 伺服器設定與自我檢測
+   ============================================================ */
+VIEWS.settings=function(){
+  return `
+  <div class="pagehead"><h2>伺服器與連線檢測</h2><p>本平台不需後端，前端直接以 FHIR RESTful API 與 HAPI FHIR Server 溝通。</p></div>
+
+  <div class="card"><div class="ch"><h3>FHIR Server 設定</h3>
+    <div class="right"><span class="pill ${CFG.offline?'warn':S.serverOk===true?'ok':S.serverOk===false?'bad':''}"><span class="dot"></span>${CFG.offline?'本機離線模式':S.serverOk===true?'已連線':S.serverOk===false?'連線失敗':'未測試'}</span></div></div>
+    <div class="cb">
+      <div class="grid g2">
+        ${inputF('cf_base','FHIR Base URL','',null,true,'預設使用官方公開測試站 hapi.fhir.org/baseR4',CFG.base)}
+        ${inputF('cf_ws','工作區代碼 (meta.tag)','',null,true,'公開伺服器上用來隔離你隊伍資料的標籤，請改成獨一無二的字串',CFG.workspace)}
+      </div>
+      <div class="grid g2" style="margin-top:14px">
+        ${inputF('cf_center','康復中心名稱','',null,false,'Consent 授權對象預設值',CFG.center)}
+        <div class="field"><label>資料來源模式</label>
+          <select id="cf_off"><option value="0"${CFG.offline?'':' selected'}>連線 HAPI FHIR Server（真實 API）</option>
+          <option value="1"${CFG.offline?' selected':''}>本機離線模式（localStorage 模擬，斷網備援）</option></select>
+          <div class="hint">離線模式仍產生完全相同的 FHIR JSON 結構，適合現場網路不穩時 demo</div></div>
+      </div>
+      <div class="chiprow" style="margin-top:10px">
+        <span class="chip" onclick="setVal('cf_base','https://hapi.fhir.org/baseR4')">hapi.fhir.org/baseR4</span>
+        <span class="chip" onclick="setVal('cf_base','http://localhost:8080/fhir')">本機 HAPI (localhost:8080/fhir)</span>
+        <span class="chip" onclick="setVal('cf_base','https://server.fire.ly')">Firely server.fire.ly</span>
+      </div>
+      <div class="formfoot">
+        <button class="btn pri" onclick="applyCfg(this)">儲存並測試連線</button>
+        <button class="btn teal" onclick="runSelfTest(this)">🧪 執行完整自我檢測（會實際寫入 11 種資源）</button>
+        <button class="btn" onclick="wipeLocal()">清除本機離線資料</button>
+      </div>
+      <div id="testOut"></div>
+    </div>
+  </div>
+
+  <div class="card"><div class="ch"><h3>本平台使用的 FHIR Resource</h3></div><div class="cb tight">
+    <div class="scroll-x"><table><thead><tr><th>Resource</th><th>用途</th><th>本系統中的實例</th><th>負責角色</th></tr></thead><tbody>
+    ${[['Patient','患者基本資料','姓名、生日、性別、病歷號、運動項目 (extension)','患者／醫師'],
+      ['Practitioner','醫護／治療人員','骨科醫師、物理治療師的姓名與職稱','系統'],
+      ['Encounter','就診／療程事件','一次骨科門診、一次復健療程','醫師'],
+      ['Condition','確診的傷病','「左膝前十字韌帶二級撕裂」含 bodySite 與 severity','醫師'],
+      ['DiagnosticReport','診斷報告','醫師對 X 光／MRI 的判讀結論','醫師'],
+      ['ImagingStudy','影像檢查紀錄','MRI 三序列 120 張，含 PACS 連結','放射師'],
+      ['Media','影像檔案','X 光／MRI 影像原圖，base64 存於 content.data','放射師上傳，三方檢視'],
+      ['ServiceRequest','轉介／醫囑請求','「轉介復健，六週內禁止負重深蹲」','醫師'],
+      ['Consent','隱私授權','患者同意康復中心調閱病歷','患者'],
+      ['CarePlan','復健計畫','臨床四階段目標；另有 category=home-exercise 的居家課表','治療師'],
+      ['Procedure','已執行的治療','場館療程；患者居家逐項打卡亦記為 Procedure','治療師／患者'],
+      ['Observation','量測數據','膝屈曲 95°、VAS 4 分、大腿圍度','治療師／患者'],
+      ['Communication','雙向訊息','治療師專業判斷回覆醫師，醫師回覆指示（inResponseTo）','治療師／醫師']]
+      .map(r=>`<tr><td><b class="mono" style="color:var(--text);font-size:13px">${r[0]}</b></td><td>${r[1]}</td><td style="color:var(--text-2)">${r[2]}</td><td><span class="tag blue">${r[3]}</span></td></tr>`).join('')}
+    </tbody></table></div>
+  </div></div>
+
+  <div class="card"><div class="ch"><h3>如何執行 / 部署</h3></div><div class="cb">
+    <div class="kv">
+      <div class="k">執行方式</div><div>直接以瀏覽器開啟本 HTML 檔即可，無需安裝任何套件或後端。</div>
+      <div class="k">建議做法</div><div>若瀏覽器出現 CORS 錯誤，請改以本機伺服器開啟：<span class="mono">python -m http.server 8000</span> 後瀏覽 <span class="mono">http://localhost:8000</span>。</div>
+      <div class="k">自架 FHIR</div><div><span class="mono">docker run -p 8080:8080 hapiproject/hapi:latest</span>，再把 Base URL 改為 <span class="mono">http://localhost:8080/fhir</span>。</div>
+      <div class="k">技術棧</div><div>純前端（HTML / CSS / Vanilla JS），資料層 100% 走 FHIR R4 RESTful API，零框架、零建置流程。</div>
+    </div>
+  </div></div>`;
+};
+async function applyCfg(btn){
+  CFG.base=val('cf_base')||DEFAULT_BASE; CFG.workspace=val('cf_ws')||'team-ihuanfhir';
+  CFG.center=val('cf_center')||'康健運動復健中心'; CFG.offline=val('cf_off')==='1';
+  saveCfg(); btnBusy(btn,true,'測試中');
+  try{ await FHIR.ping(); S.serverOk=true; toast(CFG.offline?'已切換為本機離線模式':'連線成功','ok') }
+  catch(e){ S.serverOk=false; toast('連線失敗：'+e.message,'err') }
+  btnBusy(btn,false); renderChrome(); render();
+}
+function wipeLocal(){
+  if(!confirm('確定清除所有本機離線資料？（不影響 HAPI 伺服器上的資料）'))return;
+  localStorage.removeItem(LOCAL_KEY); S.patient=null; S.patients=[]; S.data={};
+  toast('已清除本機資料','ok'); render();
+}
+
+/* ---------- 自我檢測：實際 POST / GET 全部 11 種資源 ---------- */
+async function runSelfTest(btn){
+  const out=document.getElementById('testOut');
+  const log=[];
+  const paint=()=>{ out.innerHTML=`<div class="divider"></div><div class="sechead">自我檢測結果</div>
+    <div class="scroll-x"><table><thead><tr><th>#</th><th>步驟</th><th>結果</th><th>訊息</th></tr></thead><tbody>
+    ${log.map((l,i)=>`<tr><td>${i+1}</td><td>${esc(l.step)}</td>
+      <td><span class="tag ${l.ok?'green':'red'}">${l.ok?'✓ 通過':'✕ 失敗'}</span></td>
+      <td class="mono" style="max-width:460px;white-space:pre-wrap">${esc(l.msg)}</td></tr>`).join('')}
+    </tbody></table></div>`; };
+  const step=async(name,fn)=>{ try{ const r=await fn(); log.push({step:name,ok:true,msg:r||'OK'}) }
+    catch(e){ log.push({step:name,ok:false,msg:e.message}) } paint(); };
+  btnBusy(btn,true,'檢測中');
+  out.innerHTML='<div class="loading"><span class="spin" style="border-color:#ccc;border-top-color:#0b6fb8"></span> 正在逐項檢測…</div>';
+  await step('連線 CapabilityStatement (GET /metadata)',async()=>{ await FHIR.ping(); return CFG.offline?'離線模式':CFG.base });
+  let pid=null;
+  await step('建立 Patient',async()=>{
+    const r=await FHIR.create({resourceType:'Patient',identifier:[{system:MRN_SYSTEM,value:'TEST'+Date.now().toString().slice(-6)}],
+      name:[{use:'official',text:'測試 患者',family:'測試',given:['患者']}],gender:'male',birthDate:'2000-01-01',
+      extension:[{url:SPORT_EXT,valueString:'測試用'}]});
+    pid=r.id; return 'Patient/'+r.id});
+  if(!pid){ btnBusy(btn,false); return }
+  const ref={reference:'Patient/'+pid,display:'測試 患者'};
+  const mk=(name,body)=>step('建立 '+name,async()=>{const r=await FHIR.create(Object.assign({resourceType:name},body));return name+'/'+r.id});
+  await mk('Practitioner',{name:[{text:'測試 醫師'}],qualification:[{code:{text:'骨科專科醫師'}}]});
+  await mk('Encounter',{status:'finished',class:{system:'http://terminology.hl7.org/CodeSystem/v3-ActCode',code:'AMB'},subject:ref,period:{start:new Date().toISOString()}});
+  await mk('Condition',{clinicalStatus:{coding:[{system:'http://terminology.hl7.org/CodeSystem/condition-clinical',code:'active'}]},
+    code:{text:'測試診斷'},bodySite:[{text:'左膝'}],severity:{text:'Grade II'},subject:ref,recordedDate:today()});
+  await mk('ImagingStudy',{status:'available',subject:ref,started:new Date().toISOString(),
+    modality:[{system:'http://dicom.nema.org/resources/ontology/DCM',code:'MR'}],description:'測試 MRI'});
+  await mk('Media',{status:'completed',
+    type:{coding:[{system:'http://terminology.hl7.org/CodeSystem/media-type',code:'image'}]},
+    modality:{coding:[{system:'http://dicom.nema.org/resources/ontology/DCM',code:'CR'}]},
+    subject:ref,createdDateTime:new Date().toISOString(),operator:{display:'測試 放射師'},
+    content:{contentType:'image/png',title:'測試影像 1×1 px',
+      data:'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='}});
+  await mk('DiagnosticReport',{status:'final',code:{text:'測試報告'},subject:ref,issued:new Date().toISOString(),conclusion:'測試結論'});
+  await mk('ServiceRequest',{status:'active',intent:'order',code:{text:'測試處方'},subject:ref,authoredOn:today(),note:[{text:'測試禁忌'}]});
+  await mk('Consent',{status:'active',scope:{coding:[{system:'http://terminology.hl7.org/CodeSystem/consentscope',code:'patient-privacy'}]},
+    category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/v3-ActCode',code:'IDSCL'}]}],patient:ref,dateTime:new Date().toISOString(),
+    provision:{type:'permit',actor:[{role:{text:'治療師'},reference:{display:'測試中心'}}],action:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/consentaction',code:'access'}]}]}});
+  await mk('CarePlan',{status:'active',intent:'plan',title:'測試計畫',subject:ref,created:today(),
+    activity:[{detail:{status:'in-progress',kind:'ServiceRequest',code:{text:'階段一'},description:'測試'}}]});
+  await mk('Procedure',{status:'completed',code:{text:'測試療程'},subject:ref,performedPeriod:{start:new Date().toISOString()}});
+  await mk('Observation',{status:'final',category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/observation-category',code:'therapy'}]}],
+    code:{text:'測試量測'},subject:ref,effectiveDateTime:new Date().toISOString(),valueQuantity:{value:90,unit:'deg'}});
+  await mk('CarePlan',{status:'active',intent:'plan',title:'測試居家課表',subject:ref,created:today(),
+    category:[{coding:[{system:HOME_CAT_SYS,code:HOME_CAT}],text:'居家復健處方'}],
+    activity:[{detail:{status:'scheduled',kind:'ServiceRequest',code:{text:'測試動作'},description:'測試',scheduledString:'10 下'}}],
+    extension:[{url:FREQ_EXT,valueInteger:7}]});
+  await mk('Communication',{status:'completed',priority:'routine',
+    category:[{coding:[{system:COMM_SYS,code:PT2MD}],text:'康復中心 → 主治醫師'}],
+    subject:ref,topic:{text:'測試回覆'},sent:new Date().toISOString(),
+    sender:{display:'測試 治療師'},recipient:[{display:'測試 醫師'}],
+    payload:[{contentString:'這是一則自我檢測用的治療師回覆。'}]});
+  if(!CFG.offline) await new Promise(r=>setTimeout(r,1500));
+  await step('以 _tag 搜尋（資料隔離驗證）',async()=>{
+    const n=[]; for(const t of ['Patient','Condition','Observation','Consent','CarePlan','Procedure','ImagingStudy','Media','ServiceRequest','DiagnosticReport','Communication']){
+      const r=await FHIR.search(t,{}); n.push(t+'='+r.length) } return n.join(', ')});
+  await step('以 subject 搜尋單一患者資料',async()=>{
+    const r=await FHIR.search('Observation',{subject:'Patient/'+pid}); return '該患者 Observation 共 '+r.length+' 筆'});
+  btnBusy(btn,false);
+  const bad=log.filter(l=>!l.ok).length;
+  toast(bad?bad+' 項未通過，請看檢測表':'全部 '+log.length+' 項檢測通過 🎉',bad?'err':'ok');
+}
+
+/* ============================================================
+   一鍵示範資料：完整跑一次八步驟閉環
+   ============================================================ */
+/* 合成一張放射影像風格的示範圖（無 canvas 環境時回傳 null） */
+function makeDemoXray(label,sub){
+  try{
+    const c=document.createElement('canvas'); if(!c.getContext) return null;
+    const ctx=c.getContext('2d'); if(!ctx) return null;
+    const W=520,H=640; c.width=W; c.height=H;
+    ctx.fillStyle='#05080c'; ctx.fillRect(0,0,W,H);
+    const g=ctx.createRadialGradient(W/2,H/2,40,W/2,H/2,H*0.72);
+    g.addColorStop(0,'rgba(150,170,190,.42)'); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const bone=(x,y,w,h,a)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a||0);
+      const lg=ctx.createLinearGradient(-w/2,0,w/2,0);
+      lg.addColorStop(0,'rgba(210,222,235,.32)');lg.addColorStop(.5,'rgba(238,246,255,.86)');lg.addColorStop(1,'rgba(210,222,235,.32)');
+      ctx.fillStyle=lg;ctx.beginPath();
+      if(ctx.roundRect)ctx.roundRect(-w/2,-h/2,w,h,w/2.4);else ctx.rect(-w/2,-h/2,w,h);
+      ctx.fill();ctx.restore()};
+    bone(W/2-14,168,86,300);                       // 股骨
+    bone(W/2-46,352,58,44); bone(W/2+26,352,58,44);// 股骨髁
+    bone(W/2-8,470,74,250);                        // 脛骨
+    bone(W/2+64,486,26,190,0.05);                  // 腓骨
+    bone(W/2-4,398,54,58);                         // 髕骨
+    ctx.globalAlpha=.14; ctx.fillStyle='#cfe0f0';
+    ctx.beginPath(); ctx.ellipse(W/2,400,132,116,0,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+    for(let i=0;i<5200;i++){ ctx.fillStyle='rgba(255,255,255,'+(Math.random()*0.045)+')';
+      ctx.fillRect(Math.random()*W,Math.random()*H,1.4,1.4) }
+    ctx.fillStyle='rgba(190,215,235,.85)'; ctx.font='bold 15px monospace';
+    ctx.fillText(label||'DEMO',18,32);
+    ctx.font='12px monospace'; ctx.fillStyle='rgba(160,185,210,.7)';
+    ctx.fillText('DEMO IMAGE · NOT FOR DIAGNOSIS',18,H-20);
+    ctx.fillText(new Date().toISOString().slice(0,10),W-110,H-20);
+    const dataUrl=c.toDataURL('image/jpeg',0.72);
+    return {dataUrl,name:(sub||label||'demo')+'.jpg',bytes:Math.round(dataUrl.length*0.75),w:W,h:H};
+  }catch(e){ return null }
+}
+
+async function seedDemo(btn){
+  btnBusy(btn,true,'建立示範個案…');
+  S.pendingImgs=[];
+  const T=(dOffset,h)=>{const d=new Date();d.setDate(d.getDate()+dOffset);d.setHours(h||10,0,0,0);return d.toISOString()};
+  try{
+    const p=await FHIR.create({resourceType:'Patient',
+      identifier:[{system:MRN_SYSTEM,value:'MRN'+Date.now().toString().slice(-6)}],
+      name:[{use:'official',text:'王小明',family:'王',given:['小明']}],gender:'male',birthDate:'2003-05-14',active:true,
+      telecom:[{system:'phone',value:'0912345678',use:'mobile'}],
+      extension:[{url:SPORT_EXT,valueString:'籃球'}]});
+    S.patient=p; const ref={reference:'Patient/'+p.id,display:'王小明'};
+    await FHIR.create({resourceType:'Practitioner',identifier:[{system:'urn:ihuanfhir:staff',value:'DOC001'}],
+      name:[{text:'陳建志 醫師',family:'陳',given:['建志']}],qualification:[{code:{text:'骨科專科醫師'}}]});
+    await FHIR.create({resourceType:'Practitioner',identifier:[{system:'urn:ihuanfhir:staff',value:'PT001'}],
+      name:[{text:'林怡君 物理治療師',family:'林',given:['怡君']}],qualification:[{code:{text:'物理治療師 / 運動防護員'}}]});
+    const enc=await FHIR.create({resourceType:'Encounter',status:'finished',
+      class:{system:'http://terminology.hl7.org/CodeSystem/v3-ActCode',code:'AMB',display:'ambulatory'},
+      serviceType:{text:'骨科門診'},subject:ref,period:{start:T(-28,9)}});
+    const eref={reference:'Encounter/'+enc.id};
+    const img=await FHIR.create({resourceType:'ImagingStudy',status:'available',subject:ref,started:T(-28,10),
+      modality:[{system:'http://dicom.nema.org/resources/ontology/DCM',code:'MR'}],
+      description:'左膝 MRI 無顯影（T1/T2/PD-FS）',numberOfSeries:3,numberOfInstances:120,
+      note:[{text:'PACS: pacs://hospital/study/1.2.840.113619.2.55.3'},{text:'膝關節專用線圈，屈曲 15° 擺位'}]});
+    /* 產生兩張示範影像（瀏覽器端合成，僅供 demo；真實使用時由放射師上傳檔案） */
+    const demoImgs=[makeDemoXray('LEFT KNEE · AP','左膝 正面'),makeDemoXray('LEFT KNEE · LAT','左膝 側面')].filter(Boolean);
+    if(demoImgs.length){
+      S.pendingImgs=demoImgs;
+      await uploadMedia(img.id,{mod:'MR',modText:'左膝 MRI',title:'左膝 MRI 影像',
+        site:'左膝',by:'張技術師（放射師）',when:T(-28,10),note:'示範用合成影像'});
+    }
+    const cond=await FHIR.create({resourceType:'Condition',
+      clinicalStatus:{coding:[{system:'http://terminology.hl7.org/CodeSystem/condition-clinical',code:'active'}]},
+      verificationStatus:{coding:[{system:'http://terminology.hl7.org/CodeSystem/condition-ver-status',code:'confirmed'}]},
+      category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/condition-category',code:'encounter-diagnosis'}],text:'運動損傷'}],
+      code:{coding:[{system:'http://snomed.info/sct',code:'239720000',display:'Tear of anterior cruciate ligament'}],text:'左膝前十字韌帶二級撕裂'},
+      bodySite:[{text:'左膝 (Left knee)'}],severity:{text:'第二級 (Grade II) 中度'},
+      subject:ref,encounter:eref,onsetDateTime:T(-30).slice(0,10),recordedDate:T(-28).slice(0,10),
+      note:[{text:'籃球比賽落地時膝關節外翻扭轉，當下聽到 pop 聲並立即腫脹。Lachman test 陽性，前抽屜試驗鬆弛，關節腔中量積液。'}]});
+    await FHIR.create({resourceType:'DiagnosticReport',status:'final',
+      category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/v2-0074',code:'RAD',display:'Radiology'}]}],
+      code:{text:'左膝 MRI 判讀報告'},subject:ref,encounter:eref,
+      effectiveDateTime:T(-28,11),issued:T(-28,12),imagingStudy:[{reference:'ImagingStudy/'+img.id}],
+      conclusion:'ACL 中段訊號中斷並增厚，符合 Grade II 部分撕裂；內外側半月板未見明顯撕裂；MCL 完整；關節腔中量積液，建議保守治療合併結構性復健。'});
+    await FHIR.create({resourceType:'ServiceRequest',status:'active',intent:'order',priority:'routine',
+      category:[{text:'運動處方箋 / 復健轉介'}],code:{text:'轉介運動復健（康健運動復健中心）'},
+      subject:ref,encounter:eref,authoredOn:T(-28).slice(0,10),
+      reasonReference:[{reference:'Condition/'+cond.id}],
+      occurrencePeriod:{start:T(-27).slice(0,10),end:T(57).slice(0,10)},
+      orderDetail:[{text:'第 1-2 週以消腫止痛與被動關節活動為主；第 3-4 週漸進式主動 ROM，目標屈曲 ≥120°；第 5-8 週閉鎖鏈肌力訓練，強度以疼痛 VAS ≤ 3 為上限。'}],
+      note:[{text:'禁忌事項：\n・六週內禁止負重深蹲\n・避免膝關節旋轉與剪切動作\n・禁止跳躍落地與變向訓練\n・訓練中若出現膝關節打軟或明顯腫脹立即停止並回診'}]});
+    await FHIR.create({resourceType:'Consent',status:'active',
+      scope:{coding:[{system:'http://terminology.hl7.org/CodeSystem/consentscope',code:'patient-privacy'}],text:'病歷調閱授權'},
+      category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/v3-ActCode',code:'IDSCL'}]}],
+      patient:ref,dateTime:T(-27,9),organization:[{display:CFG.center}],
+      provision:{type:'permit',period:{start:T(-27).slice(0,10),end:T(153).slice(0,10)},
+        actor:[{role:{text:'康復中心治療師'},reference:{display:CFG.center}}],
+        action:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/consentaction',code:'access'}]}]}});
+    const cp=await FHIR.create({resourceType:'CarePlan',status:'active',intent:'plan',
+      title:'左膝 ACL 二級撕裂 12 週復健計畫',subject:ref,created:T(-27).slice(0,10),
+      period:{start:T(-27).slice(0,10),end:T(57).slice(0,10)},
+      addresses:[{reference:'Condition/'+cond.id}],
+      description:'四階段：消腫止痛 → 恢復活動度 → 肌力重建 → 回場專項訓練，每階段以客觀量測達標才進階。',
+      activity:STAGE_PRESET.map((s,i)=>({detail:{status:i===0?'completed':i===1?'in-progress':'not-started',
+        kind:'ServiceRequest',code:{text:s.code},description:s.desc,scheduledString:s.sch}}))});
+    const sessions=[[-24,'徒手治療（髕骨鬆動）+ 股四頭肌等長收縮 3×15 + 冰敷 15 分鐘','初次評估，關節腔仍有積液，以消腫為主'],
+      [-17,'關節鬆動術 + 主動輔助 ROM 訓練 + 電療','腫脹改善，開始加入主動活動'],
+      [-10,'主動 ROM + 直抬腿 3×15 + 腿部推蹬（低負荷）','患者主訴訓練後輕微緊繃，已冰敷處理'],
+      [-3,'閉鎖鏈半蹲（0-60°）+ 平衡墊本體感覺訓練','肌力進步明顯，維持不超過 60° 屈曲負重']];
+    for(const [d,code,note] of sessions){
+      await FHIR.create({resourceType:'Procedure',status:'completed',category:{text:'物理治療 / 運動復健'},
+        code:{text:code},subject:ref,performedPeriod:{start:T(d,14),end:T(d,15)},
+        basedOn:[{reference:'CarePlan/'+cp.id}],performer:[{actor:{display:'林怡君 物理治療師'}}],note:[{text:note}]});
+    }
+    const obs=[
+      ['膝關節屈曲角度 (ROM)','41950-7','deg',[[-24,72],[-17,88],[-10,105],[-3,118]],'therapy','林怡君 物理治療師'],
+      ['疼痛指數 VAS','72514-3','score',[[-24,7],[-17,5],[-12,4],[-10,4],[-6,3],[-3,2]],'survey','患者本人（居家回報）'],
+      ['大腿圍度','','cm',[[-24,46.2],[-10,47.4],[-3,48.3]],'therapy','林怡君 物理治療師'],
+    ];
+    for(const [name,loinc,unit,pts,cat,who] of obs){
+      for(const [d,v] of pts){
+        const code={text:name}; if(loinc)code.coding=[{system:'http://loinc.org',code:loinc,display:name}];
+        await FHIR.create({resourceType:'Observation',status:'final',
+          category:[{coding:[{system:'http://terminology.hl7.org/CodeSystem/observation-category',code:cat}],text:cat==='survey'?'居家自主回報':'場館臨床量測'}],
+          code,subject:ref,effectiveDateTime:T(d,cat==='survey'?21:15),
+          valueQuantity:{value:v,unit,system:'http://unitsofmeasure.org'},
+          bodySite:name.includes('VAS')?undefined:{text:'左膝'},performer:[{display:who}]});
+      }
+    }
+    /* 居家復健處方（治療師指派） */
+    const homeEx=HOME_EX.slice(0,4);
+    const hp=await FHIR.create({resourceType:'CarePlan',status:'active',intent:'plan',
+      category:[{coding:[{system:HOME_CAT_SYS,code:HOME_CAT,display:'Home exercise program'}],text:'居家復健處方'}],
+      title:'左膝 ACL 居家自主訓練（第 3-4 週）',subject:ref,created:T(-14).slice(0,10),
+      period:{start:T(-14).slice(0,10),end:T(14).slice(0,10)},
+      author:{display:'林怡君 物理治療師（'+CFG.center+'）'},
+      description:'每日於家中完成下列動作。任何動作若引發膝關節刺痛或打軟請立即停止並於 App 回報；六週內仍禁止負重深蹲與跳躍落地。',
+      activity:homeEx.map(e=>({detail:{status:'scheduled',kind:'ServiceRequest',
+        code:{text:e.n},description:e.d,scheduledString:e.s,location:{display:'居家'}}})),
+      extension:[{url:FREQ_EXT,valueInteger:5}],
+      note:[{text:'訓練後腫脹加劇請冰敷 15 分鐘並回報疼痛指數。'}]});
+    /* 患者居家打卡紀錄 */
+    for(const dayOff of [-13,-12,-10,-9,-7,-5,-4,-2,-1]){
+      const pick=homeEx.slice(0,dayOff<-8?2:3);
+      for(const e of pick){
+        await FHIR.create({resourceType:'Procedure',status:'completed',
+          category:{text:HOME_PROC_TEXT},code:{text:e.n},subject:ref,
+          performedDateTime:T(dayOff,20),basedOn:[{reference:'CarePlan/'+hp.id}],
+          location:{display:'居家'},performer:[{actor:{display:'患者本人（居家）'}}]});
+      }
+    }
+    /* 治療師回覆醫師 → 醫師回覆治療師（雙向對話串） */
+    const c1=await FHIR.create({resourceType:'Communication',status:'completed',priority:'routine',
+      category:[{coding:[{system:COMM_SYS,code:PT2MD,display:'Therapist to physician'}],text:'康復中心 → 主治醫師'}],
+      subject:ref,topic:{text:'第 3 週復健進度回報與醫囑調整建議'},sent:T(-9,18),received:T(-8,9),
+      sender:{display:'林怡君 物理治療師（'+CFG.center+'）'},recipient:[{display:'陳建志 醫師（骨科）'}],
+      about:[{reference:'Condition/'+cond.id},{reference:'CarePlan/'+cp.id}],
+      payload:[{contentString:'患者目前膝屈曲已達 105°，優於同期預期（90°）。股四頭肌 MMT 恢復至 4 級，關節腔積液已明顯消退，訓練後無腫脹反應。\n\n建議：可考慮提前開放閉鎖鏈半蹲至 60 度並加入部分負重訓練，惟仍維持禁止旋轉與跳躍。是否同意調整，請醫師指示。'}]});
+    await FHIR.create({resourceType:'Communication',status:'completed',priority:'routine',
+      category:[{coding:[{system:COMM_SYS,code:MD2PT,display:'Physician to therapist'}],text:'主治醫師 → 康復中心'}],
+      subject:ref,topic:{text:'Re: 第 3 週復健進度回報與醫囑調整建議'},sent:T(-8,10),received:T(-8,11),
+      sender:{display:'陳建志 醫師（骨科／復健科）'},recipient:[{display:'林怡君 物理治療師（'+CFG.center+'）'}],
+      inResponseTo:[{reference:'Communication/'+c1.id}],
+      payload:[{contentString:'同意依建議調整：開放閉鎖鏈半蹲 0-60°，負重上限為體重 50%。旋轉、剪切與跳躍落地訓練仍維持禁止至滿六週。\n請於第 6 週安排 ROM 與 Hop Test 數據，我會據此評估是否提前回場。'}]});
+    await FHIR.create({resourceType:'Communication',status:'completed',priority:'urgent',
+      category:[{coding:[{system:COMM_SYS,code:PT2MD,display:'Therapist to physician'}],text:'康復中心 → 主治醫師'}],
+      subject:ref,topic:{text:'居家依從性下降，建議回診時衛教'},sent:T(-2,19),
+      sender:{display:'林怡君 物理治療師（'+CFG.center+'）'},recipient:[{display:'陳建志 醫師（骨科）'}],
+      about:[{reference:'CarePlan/'+hp.id}],
+      payload:[{contentString:'患者近一週居家課表完成率下降，主訴課業繁忙。已將頻率調整為每週 5 天並簡化動作數量。\n\n建議醫師回診時一併衛教居家訓練對 ACL 保守治療成效的重要性。'}]});
+
+    await loadPatientData();
+    try{ S.patients=await FHIR.search('Patient') }catch(e){}
+    toast('示範個案「王小明」已建立，八步驟閉環完成 🎉','ok');
+    S.view='home'; renderChrome(); render(); window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){ toast('示範資料建立失敗：'+e.message,'err'); btnBusy(btn,false) }
+}
+
+/* ============================================================
+   啟動
+   ============================================================ */
+document.addEventListener('click',()=>document.getElementById('roleMenu').classList.remove('open'));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal() });
+
+(async function boot(){
+  renderLanding(); landingStatus(); renderChrome(); render();
+  try{ await FHIR.ping(); S.serverOk=true }
+  catch(e){ S.serverOk=false; console.warn('FHIR ping failed',e.message);
+    toast('無法連線 FHIR 伺服器，可到「伺服器與檢測」切換本機離線模式','warn'); }
+  landingStatus(); renderChrome();
+  try{ S.patients=await FHIR.search('Patient') }catch(e){}
+  render();
+})();
+
+</script>
+</body>
+</html>
