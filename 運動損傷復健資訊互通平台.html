@@ -1693,7 +1693,7 @@ async function createCarePlan(btn){
       subject:subjRef(),created:today(),
       period:{start:val('cp_start')||today(),end:val('cp_end')||undefined},
       description:val('cp_desc'),activity:acts};
-    if(val('cp_sr')) res.basedOn=[{reference:'ServiceRequest/'+val('cp_sr')}];
+    if(val('cp_sr')) res.extension=[{url:'http://example.org/fhir/StructureDefinition/careplan-basedon-servicerequest',valueReference:{reference:'ServiceRequest/'+val('cp_sr')}}];
     if(val('cp_cond')) res.addresses=[{reference:'Condition/'+val('cp_cond')}];
     const r=await FHIR.create(res);
     toast('已建立 CarePlan/'+r.id,'ok'); await loadPatientData(); render();
